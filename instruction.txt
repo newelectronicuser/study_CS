@@ -279,3 +279,46 @@ CompletableFuture
 
 Summary
 
+-----------
+
+the executive framework
+
+Introduction
+
+Thread Pools
+
+Executors
+
+Callable and Future
+
+Asynchronous Programming
+
+Completable Futures
+
+Creating a Completable Future
+
+Implementing an Asynchronous API
+
+Running Code on Completion
+
+Handling Exceptions
+
+Tranforming a Completable Future
+
+Composing Completable Futures
+
+Combining Completable Futures
+
+Waiting for Many Tasks to Complete
+
+Waiting for the First Task
+
+Handling timeouts
+
+Summary
+
+
+
+
+
+
