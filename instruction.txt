@@ -23,3 +23,66 @@ Custom Exceptions
 Chaining Exceptions
 
 Summary
+
+----------------
+
+generics
+
+Introduction
+
+The Need for Generics
+
+A Poor Solution
+
+Generic Classes
+
+Generics and Primitive Types
+
+Contraints
+
+Type Erasure
+
+Comparable Interface
+
+Generic Methods
+
+Multiple Type Paramters
+
+Generic Classes and Inheritence
+
+Wildcards
+
+Summary
+
+
+------
+
+collections
+
+Introduction
+
+Overview of Collections Framework
+
+The Need for Iterables
+
+The Iterator Interface
+
+The Collection Interface
+
+The List Interface
+
+The Comparable Interface
+
+The Comparator Interface
+
+The Queue Interface
+
+The Set Interface
+
+Hash Tables
+
+The Map Interfaces
+
+Summary
+
+
