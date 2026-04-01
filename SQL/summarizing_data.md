@@ -15,6 +15,31 @@ SELECT
     COUNT(DISTINCT i.client_id) AS total_clients
 FROM sql_invoicing.invoices i
 WHERE i.invoice_date > '2019-07-01';
+
+-- Comprehensive Report Example (Using UNION)
+SELECT
+    'First half of 2019' AS date_range,
+    SUM(i.invoice_total) AS total_sales,
+    SUM(i.payment_total) AS total_payments,
+    SUM(i.invoice_total - i.payment_total) AS what_we_expect
+FROM sql_invoicing.invoices i
+WHERE i.invoice_date BETWEEN '2019-01-01' AND '2019-06-30'
+UNION
+SELECT
+    'Second half of 2019' AS date_range,
+    SUM(i.invoice_total) AS total_sales,
+    SUM(i.payment_total) AS total_payments,
+    SUM(i.invoice_total - i.payment_total) AS what_we_expect
+FROM sql_invoicing.invoices i
+WHERE i.invoice_date BETWEEN '2019-07-01' AND '2019-12-31'
+UNION
+SELECT
+    'Total' AS date_range,
+    SUM(i.invoice_total) AS total_sales,
+    SUM(i.payment_total) AS total_payments,
+    SUM(i.invoice_total - i.payment_total) AS what_we_expect
+FROM sql_invoicing.invoices i
+WHERE i.invoice_date BETWEEN '2019-01-01' AND '2019-12-31';
 ```
 
 > [!IMPORTANT]
@@ -43,6 +68,17 @@ SELECT
 FROM sql_invoicing.invoices i
 JOIN sql_invoicing.clients c USING(client_id)
 GROUP BY c.state, c.city;
+
+-- Grouping by Date and Payment Method
+SELECT 
+    p.`date` AS date,
+    pm.name AS payment_method,
+    SUM(p.amount) AS total_payments
+FROM sql_invoicing.payments p 
+JOIN sql_invoicing.payment_methods pm ON
+    p.payment_method = pm.payment_method_id 
+GROUP BY date, payment_method
+ORDER BY date ASC;
 ```
 
 ---
@@ -59,6 +95,20 @@ SELECT
 FROM sql_invoicing.invoices i
 GROUP BY client_id  
 HAVING total_sales > 500 AND number_of_invoices > 5;
+
+-- Complex Example: Joins + Grouping + Having
+-- Finds customers in 'VA' who spent more than $100
+SELECT 
+    c.customer_id,
+    c.first_name AS customer_name,
+    c.state,
+    SUM(oi.quantity * oi.unit_price) AS money_spent
+FROM orders o 
+JOIN customers c USING(customer_id)
+JOIN order_items oi USING(order_id)
+WHERE c.state = 'VA'
+GROUP BY customer_id
+HAVING money_spent > 100;
 ```
 
 > [!IMPORTANT]
@@ -87,6 +137,15 @@ SELECT
 FROM sql_invoicing.invoices i
 JOIN sql_invoicing.clients c USING(client_id)
 GROUP BY state, city WITH ROLLUP;
+
+-- Totaling by Payment Method
+SELECT 
+    pm.name AS payment_method,
+    SUM(p.amount) AS total
+FROM sql_invoicing.payments p 
+JOIN sql_invoicing.payment_methods pm ON
+    p.payment_method = pm.payment_method_id
+GROUP BY pm.name WITH ROLLUP;
 ```
 
 > [!TIP]
