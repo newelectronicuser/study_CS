@@ -1,0 +1,25 @@
+Java Exceptions
+
+What are Exceptions
+
+Types of Exceptions
+
+Exceptions Hierarchy
+
+Catching Exceptions
+
+Catching Multiple Type of Exceptions
+
+The finally Block
+
+The try-with-resources Statement
+
+Throwing Exceptions
+
+Re-throwing Exceptions
+
+Custom Exceptions
+
+Chaining Exceptions
+
+Summary
