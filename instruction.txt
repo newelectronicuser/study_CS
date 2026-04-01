@@ -86,3 +86,44 @@ The Map Interfaces
 Summary
 
 
+---
+
+lambda expressions and functional interfaces
+
+Introduction
+
+Functional Interfaces
+
+Anonymous Inner Classes
+
+Lambda expressions
+
+Variable Capture
+
+Method References
+
+Built-in Functional Interfaces
+
+The Consumer Interface
+
+Chaining Consumer
+
+The Supplier Interface
+
+The Function Interface
+
+Composing Function
+
+Chaining Functions
+
+The Predicate Interface
+
+Combining Predicates
+
+The UnaryOperator Interface
+
+The BinaryOperator Interface
+
+Summary
+
+--- 
