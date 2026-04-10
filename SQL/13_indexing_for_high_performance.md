@@ -79,18 +79,34 @@ Used for searching large blocks of text (natural language search). Standard inde
 CREATE FULLTEXT INDEX idx_title_body ON sql_blog.posts (title, body);
 ```
  
-### Natural Language vs. Boolean Mode
- 
+### Natural Language Search
+The default mode for full-text searches. It searches for rows that contain any of the given keywords and ranks them by relevance.
+
 ```sql
--- Natural Language Search (Default)
-SELECT * FROM sql_blog.posts
-WHERE MATCH(title, body) AGAINST('react redux');
- 
--- Boolean Mode (More control)
--- Use '+' for MUST include, '-' for MUST NOT include
-SELECT *, MATCH(title, body) AGAINST('react -redux +form' IN BOOLEAN MODE)
-FROM sql_blog.posts
-WHERE MATCH(title, body) AGAINST('react -redux +form' IN BOOLEAN MODE);
+SELECT *
+FROM sql_blog.posts p 
+WHERE MATCH(p.title, p.body) AGAINST('react redux');
+```
+
+### Boolean Mode
+Boolean mode gives you more control over the search using operators (+, -, etc.).
+
+```sql
+-- 1. Find rows with 'react' but NOT 'redux'
+-- We can also project the relevance score
+SELECT *, MATCH(p.title, p.body ) AGAINST('react redux' IN BOOLEAN MODE)
+FROM sql_blog.posts p 
+WHERE MATCH(p.title, p.body ) AGAINST('react -redux' IN BOOLEAN MODE);
+
+-- 2. Find rows with 'react', NOT 'redux', and MUST have 'form'
+SELECT *, MATCH(p.title, p.body ) AGAINST('react redux' IN BOOLEAN MODE)
+FROM sql_blog.posts p 
+WHERE MATCH(p.title, p.body ) AGAINST('react -redux +form' IN BOOLEAN MODE);
+
+-- 3. Search for an exact phrase using double quotes
+SELECT *, MATCH(p.title, p.body ) AGAINST('react redux' IN BOOLEAN MODE)
+FROM sql_blog.posts p 
+WHERE MATCH(p.title, p.body ) AGAINST('"handling a form"' IN BOOLEAN MODE);
 ```
  
 > [!NOTE]
