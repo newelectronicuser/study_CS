@@ -1,6 +1,7 @@
 # SQL: Summarizing Data - Interview Notes 📊
 
 ## 1- Aggregate Functions 🧮
+
 Aggregate functions take a series of values and return a single value. They are the backbone of data reporting.
 
 ```sql
@@ -48,6 +49,7 @@ WHERE i.invoice_date BETWEEN '2019-01-01' AND '2019-12-31';
 ---
 
 ## 2- The GROUP BY Clause 📂
+
 The `GROUP BY` clause divides the result set into groups based on one or more columns.
 
 ```sql
@@ -70,13 +72,13 @@ JOIN sql_invoicing.clients c USING(client_id)
 GROUP BY c.state, c.city;
 
 -- Grouping by Date and Payment Method
-SELECT 
+SELECT
     p.`date` AS date,
     pm.name AS payment_method,
     SUM(p.amount) AS total_payments
-FROM sql_invoicing.payments p 
+FROM sql_invoicing.payments p
 JOIN sql_invoicing.payment_methods pm ON
-    p.payment_method = pm.payment_method_id 
+    p.payment_method = pm.payment_method_id
 GROUP BY date, payment_method
 ORDER BY date ASC;
 ```
@@ -84,6 +86,7 @@ ORDER BY date ASC;
 ---
 
 ## 3- The HAVING Clause 🔍
+
 The `HAVING` clause is used to filter data **after** grouping has occurred.
 
 ```sql
@@ -93,17 +96,17 @@ SELECT
     SUM(i.invoice_total) AS total_sales,
     COUNT(*) AS number_of_invoices
 FROM sql_invoicing.invoices i
-GROUP BY client_id  
+GROUP BY client_id
 HAVING total_sales > 500 AND number_of_invoices > 5;
 
 -- Complex Example: Joins + Grouping + Having
 -- Finds customers in 'VA' who spent more than $100
-SELECT 
+SELECT
     c.customer_id,
     c.first_name AS customer_name,
     c.state,
     SUM(oi.quantity * oi.unit_price) AS money_spent
-FROM orders o 
+FROM orders o
 JOIN customers c USING(customer_id)
 JOIN order_items oi USING(order_id)
 WHERE c.state = 'VA'
@@ -113,12 +116,14 @@ HAVING money_spent > 100;
 
 > [!IMPORTANT]
 > **WHERE vs. HAVING**:
+>
 > - `WHERE`: Filters rows **before** they are grouped.
 > - `HAVING`: Filters rows **after** they have been grouped (used specifically for aggregated columns).
 
 ---
 
 ## 4- The ROLLUP Operator [MySQL Only] 🌀
+
 The `WITH ROLLUP` operator calculates subtotals and grand totals for the grouped columns.
 
 ```sql
@@ -139,10 +144,10 @@ JOIN sql_invoicing.clients c USING(client_id)
 GROUP BY state, city WITH ROLLUP;
 
 -- Totaling by Payment Method
-SELECT 
+SELECT
     pm.name AS payment_method,
     SUM(p.amount) AS total
-FROM sql_invoicing.payments p 
+FROM sql_invoicing.payments p
 JOIN sql_invoicing.payment_methods pm ON
     p.payment_method = pm.payment_method_id
 GROUP BY pm.name WITH ROLLUP;

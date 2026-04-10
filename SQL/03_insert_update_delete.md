@@ -1,7 +1,9 @@
 # SQL: Summarizing Data (Insert, Update, Delete) 🛠️
 
 ## 1- Column Attributes 📊
+
 Before performing DML (Data Manipulation Language) operations, it's essential to understand column constraints:
+
 - **PK (Primary Key)**: Uniquely identifies each record.
 - **NN (Not Null)**: The column cannot contain a `NULL` value.
 - **AI (Auto Increment)**: The database automatically generates a unique number for new rows.
@@ -10,6 +12,7 @@ Before performing DML (Data Manipulation Language) operations, it's essential to
 ---
 
 ## 2- Inserting a Row 📥
+
 There are two ways to insert data into a table.
 
 ```sql
@@ -27,6 +30,7 @@ VALUES ('John', 'Smith', '1990-01-01', 'address', 'city', 'CA');
 ---
 
 ## 3- Inserting Multiple Rows 📚
+
 You can insert several records in a single query by separating value sets with commas.
 
 ```sql
@@ -43,6 +47,7 @@ VALUES
 ---
 
 ## 4- Inserting Hierarchical Rows 🏗️
+
 Used when you need to insert a parent record (Order) and linked child records (Order Items).
 
 ```sql
@@ -61,6 +66,7 @@ VALUES
 ---
 
 ## 5- Creating a Copy of a Table 📂
+
 You can clone a table's data or populate an existing table from a query result.
 
 ```sql
@@ -80,17 +86,18 @@ WHERE o.order_date < '2019-01-01';
 ---
 
 ## 6- Updating a Single Row ✏️
+
 Use the `UPDATE` statement to modify existing records.
 
 ```sql
 UPDATE sql_invoicing.invoices
-SET payment_total = 10, 
+SET payment_total = 10,
     payment_date = '2019-03-01'
 WHERE invoice_id = 1;
 
 -- Resetting to NULL or DEFAULT
 UPDATE sql_invoicing.invoices
-SET payment_total = DEFAULT, 
+SET payment_total = DEFAULT,
     payment_date = NULL
 WHERE invoice_id = 1;
 ```
@@ -98,6 +105,7 @@ WHERE invoice_id = 1;
 ---
 
 ## 7- Updating Multiple Rows 💹
+
 You can update multiple rows by using broader filters in the `WHERE` clause.
 
 ```sql
@@ -116,6 +124,7 @@ WHERE birth_date < '1990-01-01';
 ---
 
 ## 8- Using Subqueries in Updates 🔄
+
 Subqueries allow you to update rows based on criteria from other tables.
 
 ```sql
@@ -124,8 +133,8 @@ UPDATE sql_invoicing.invoices
 SET payment_total = invoice_total * 0.5,
     payment_date = due_date
 WHERE client_id = (
-    SELECT client_id 
-    FROM sql_invoicing.clients 
+    SELECT client_id
+    FROM sql_invoicing.clients
     WHERE name = 'Myworks'
 );
 
@@ -142,6 +151,7 @@ WHERE customer_id IN (
 ---
 
 ## 9- Deleting Rows 🗑️
+
 Remove unwanted records.
 
 ```sql
@@ -158,12 +168,15 @@ WHERE invoice_id = 1;
 ---
 
 ## 10- Restoring the Databases 🛠️
+
 Always keep a backup script to reset your database after performing destructive DML operations.
+
 - **Workflow**: Run the original creation script (`create-db.sql`) to wipe your changes and return to a clean state.
 
 ---
 
 ## Summary
+
 - **Insert**: Use `LAST_INSERT_ID()` for relations.
 - **Update**: Use subqueries for dynamic logic.
 - **Delete**: Always double-check your `WHERE` condition!

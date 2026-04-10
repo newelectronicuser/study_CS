@@ -1,6 +1,7 @@
 # SQL: Retrieving Data From Multiple Tables 🔗
 
 ## 1- Inner Joins 🤝
+
 The most common type of join. It returns records that have matching values in both tables.
 
 ```sql
@@ -8,7 +9,7 @@ The most common type of join. It returns records that have matching values in bo
 SELECT
     c.customer_id
 FROM orders o
-JOIN customers c 
+JOIN customers c
   ON o.customer_id = c.customer_id;
 
 -- Joining products and order items
@@ -18,13 +19,14 @@ SELECT
     oi.quantity,
     oi.unit_price
 FROM order_items oi
-JOIN products p 
+JOIN products p
   ON oi.product_id = p.product_id;
 ```
 
 ---
 
 ## 2- Joining Across Databases 🌐
+
 You can join tables from different databases by prefixing the table names with the database name.
 
 ```sql
@@ -34,23 +36,24 @@ SELECT
     oi.quantity,
     oi.unit_price
 FROM sql_store.order_items oi
-JOIN sql_inventory.products p 
+JOIN sql_inventory.products p
   ON oi.product_id = p.product_id;
 ```
 
 ---
 
 ## 3- Self Joins 🪞
+
 A self join is used to join a table with itself. This is useful for hierarchical data like employees and their managers.
 
 ```sql
 -- Joining employees to find their managers
 SELECT
-    e.employee_id, 
-    e.first_name, 
+    e.employee_id,
+    e.first_name,
     m.first_name AS manager
 FROM sql_hr.employees e
-JOIN sql_hr.employees m 
+JOIN sql_hr.employees m
   ON e.reports_to = m.employee_id;
 ```
 
@@ -60,6 +63,7 @@ JOIN sql_hr.employees m
 ---
 
 ## 4- Joining Multiple Tables 🧱
+
 You can join more than two tables by chaining multiple `JOIN` clauses.
 
 ```sql
@@ -71,9 +75,9 @@ SELECT
     c.last_name,
     os.name AS status
 FROM orders o
-JOIN order_statuses os 
+JOIN order_statuses os
   ON o.status = os.order_status_id
-JOIN customers c 
+JOIN customers c
   ON o.customer_id = c.customer_id;
 
 -- Invoicing example: payments, clients, and payment methods
@@ -84,15 +88,16 @@ SELECT
     p.amount,
     pm.name AS payment_method
 FROM sql_invoicing.payments p
-JOIN sql_invoicing.clients c 
+JOIN sql_invoicing.clients c
   ON p.client_id = c.client_id
-JOIN sql_invoicing.payment_methods pm 
+JOIN sql_invoicing.payment_methods pm
   ON p.payment_method = pm.payment_method_id;
 ```
 
 ---
 
 ## 5- Compound Join Conditions 🔐
+
 Used when a table has a **Composite Primary Key** (multiple columns).
 
 ```sql
@@ -106,6 +111,7 @@ JOIN order_item_notes oin
 ---
 
 ## 6- Implicit Join Syntax 📜
+
 An older way of joining tables without using the `JOIN` keyword.
 
 ```sql
@@ -126,6 +132,7 @@ WHERE o.customer_id = c.customer_id;
 ---
 
 ## 7- Outer Joins 🚪
+
 Outer joins return all records from one table, and the matching records from the other.
 
 - **LEFT JOIN**: All records from the left table.
@@ -153,6 +160,7 @@ LEFT JOIN order_items oi ON p.product_id = oi.product_id;
 ---
 
 ## 8- Outer Join Between Multiple Tables 🏗️
+
 Chaining multiple outer joins.
 
 ```sql
@@ -170,6 +178,7 @@ ORDER BY c.customer_id;
 ---
 
 ## 9- Self Outer Joins 🪞🚪
+
 Using `LEFT JOIN` on a self join to include the top-level entity (e.g., the CEO who has no manager).
 
 ```sql
@@ -178,13 +187,14 @@ SELECT
     e.first_name,
     m.first_name AS manager
 FROM sql_hr.employees e
-LEFT JOIN sql_hr.employees m 
+LEFT JOIN sql_hr.employees m
   ON e.reports_to = m.employee_id;
 ```
 
 ---
 
 ## 10- The USING Clause 🛠️
+
 A shorthand for joining when the column names are identical in both tables.
 
 ```sql
@@ -209,6 +219,7 @@ JOIN order_item_notes oin USING (order_id, product_id);
 ---
 
 ## 11- Natural Joins 🌿
+
 The database automatically joins on any common column names.
 
 ```sql
@@ -224,6 +235,7 @@ NATURAL JOIN customers c;
 ---
 
 ## 12- Cross Joins ✖️
+
 Combines every row from the first table with every row from the second table (Cartesian Product).
 
 ```sql
@@ -242,6 +254,7 @@ SELECT * FROM shippers s, products p;
 ---
 
 ## 13- Unions ➕
+
 Unions allow you to combine result sets vertically from multiple queries.
 
 ```sql
@@ -268,6 +281,7 @@ ORDER BY first_name;
 ---
 
 ## A Quick Note 💡
+
 - **Inner vs Outer**: Inner Join drops rows with no matches; Outer Join (Left/Right) preserves rows from one side.
 - **Self Joins**: Always use aliases.
 - **Explicit vs Implicit**: Always prefer explicit `JOIN` for readability and error prevention.

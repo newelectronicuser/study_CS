@@ -5,6 +5,7 @@ Triggers and Events allow you to automate tasks within the database. Triggers re
 ---
 
 ## 1- Triggers 🔫
+
 A trigger is a block of SQL code that automatically executes in response to a specific event on a particular table.
 
 > [!NOTE]
@@ -55,6 +56,7 @@ WHERE client_id = 5 AND invoice_id = 3;
 ---
 
 ## 2- Viewing Triggers 👁️
+
 You can inspect the triggers defined in your database using the `SHOW TRIGGERS` command.
 
 ```sql
@@ -68,6 +70,7 @@ SHOW TRIGGERS FROM sql_invoicing LIKE 'payments%';
 ---
 
 ## 3- Dropping Triggers 🗑️
+
 Triggers can be removed when they are no longer needed.
 
 > [!TIP]
@@ -80,6 +83,7 @@ DROP TRIGGER IF EXISTS sql_invoicing.payments_after_insert;
 ---
 
 ## 4- Using Triggers for Auditing 📋
+
 Triggers are excellent for maintaining an audit trail (a log of all changes made to a table).
 
 ```sql
@@ -135,6 +139,7 @@ DELIMITER ;
 ---
 
 ## 5- Events ⏰
+
 An event is a task (or block of SQL code) that runs according to a schedule.
 
 > [!IMPORTANT]
@@ -164,6 +169,7 @@ DELIMITER ;
 ---
 
 ## 6- Viewing, Dropping and Altering Events 🛠️
+
 Manage your scheduled events using these administrative commands.
 
 ```sql

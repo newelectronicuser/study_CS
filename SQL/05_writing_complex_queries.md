@@ -5,6 +5,7 @@ Mastering subqueries and complex join logic is essential for advanced data manip
 ---
 
 ## 1. Introduction
+
 Subqueries (or inner queries) are queries nested within another SQL statement. They provide a powerful way to perform multi-step data retrieval in a single command.
 
 > [!NOTE]
@@ -13,6 +14,7 @@ Subqueries (or inner queries) are queries nested within another SQL statement. T
 ---
 
 ## 2. Subqueries
+
 The most common use of a subquery is to filter data in the `WHERE` clause based on a dynamic calculation.
 
 ```sql
@@ -37,6 +39,7 @@ WHERE e.salary > (
 ---
 
 ## 3. The IN Operator
+
 Used when a subquery returns a list of values. It's often used to exclude or include specific IDs.
 
 ```sql
@@ -69,6 +72,7 @@ WHERE c.client_id NOT IN (
 ---
 
 ## 4. Subqueries vs Joins
+
 Many queries can be written using either subqueries or joins. Choosing the right one depends on readability and performance.
 
 > [!TIP]
@@ -112,6 +116,7 @@ ORDER BY c.customer_id;
 ---
 
 ## 5. The ALL Keyword
+
 The `ALL` keyword allows you to compare a single value against every value returned by a subquery.
 
 ```sql
@@ -137,6 +142,7 @@ WHERE i.invoice_total > ALL(
 ---
 
 ## 6. The ANY Keyword
+
 `ANY` (or `SOME`) checks if a condition is true for at least one value in the set.
 
 ```sql
@@ -164,6 +170,7 @@ WHERE client_id = ANY (
 ---
 
 ## 7. Correlated Subqueries
+
 A subquery that refers to a column from the outer query for each row processed.
 
 > [!CAUTION]
@@ -192,6 +199,7 @@ WHERE i.invoice_total > (
 ---
 
 ## 8. The EXISTS Operator
+
 `EXISTS` checks for the presence of rows. It is often faster than `IN` because it stops searching as soon as it finds a match.
 
 ```sql
@@ -217,11 +225,12 @@ WHERE NOT EXISTS (
 ---
 
 ## 9. Subqueries in the SELECT Clause
+
 You can use subqueries to calculate dynamic values that appear as columns.
 
 ```sql
 -- Show every invoice with the global average and the difference
-SELECT 
+SELECT
     i.invoice_id,
     i.invoice_total,
     (SELECT AVG(i2.invoice_total) FROM sql_invoicing.invoices i2) AS invoice_average,
@@ -229,7 +238,7 @@ SELECT
 FROM sql_invoicing.invoices i;
 
 -- Summary of sales per client vs global average
-SELECT 
+SELECT
     c.client_id,
     c.name,
     (SELECT SUM(invoice_total) FROM sql_invoicing.invoices WHERE client_id = c.client_id) AS total_sales,
@@ -241,6 +250,7 @@ FROM sql_invoicing.clients c;
 ---
 
 ## 10. Subqueries in the FROM Clause
+
 You can treat the result of a query as a virtual table (often called a Derived Table).
 
 > [!IMPORTANT]
@@ -250,7 +260,7 @@ You can treat the result of a query as a virtual table (often called a Derived T
 -- Select from a summary result to filter for non-null sales
 SELECT *
 FROM (
-    SELECT 
+    SELECT
         c.client_id,
         c.name,
         (SELECT SUM(invoice_total) FROM sql_invoicing.invoices WHERE client_id = c.client_id) AS total_sales,

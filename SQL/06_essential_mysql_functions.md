@@ -189,4 +189,3 @@ ORDER BY points DESC;
 
 > [!IMPORTANT]
 > Use `CASE` when you have more than two branches of logic. For simple binary choices, `IF()` is more concise.
-

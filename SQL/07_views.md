@@ -5,6 +5,7 @@ Views are virtual tables that provide a simplified or restricted view of the und
 ---
 
 ## Table of Contents
+
 1. [Creating Views](#1-creating-views-📽️)
 2. [Altering or Dropping Views](#2-altering-or-dropping-views-✂️)
 3. [Updatable Views](#3-updatable-views-🔄)
@@ -14,6 +15,7 @@ Views are virtual tables that provide a simplified or restricted view of the und
 ---
 
 ## 1- Creating Views 📽️
+
 Views are created using the `CREATE VIEW` statement. They are excellent for simplifying complex queries that you run frequently.
 
 ```sql
@@ -41,6 +43,7 @@ JOIN sql_invoicing.clients c USING(client_id);
 ---
 
 ## 2- Altering or Dropping Views ✂️
+
 If you need to change the definition of a view or remove it entirely.
 
 ```sql
@@ -64,6 +67,7 @@ GROUP BY c.client_id, c.name;
 ---
 
 ## 3- Updatable Views 🔄
+
 You can update, delete, or insert data through a view if it meets certain criteria (like not having `DISTINCT`, `GROUP BY`, or aggregate functions).
 
 ```sql
@@ -94,6 +98,7 @@ WHERE invoice_id = 2;
 ---
 
 ## 4- THE WITH CHECK OPTION Clause 🛡️
+
 Used to prevent updates that would make a row "disappear" from the view.
 
 ```sql
@@ -112,7 +117,7 @@ FROM sql_invoicing.invoices i
 WHERE (i.invoice_total - i.payment_total) > 0
 WITH CHECK OPTION;
 
--- This update would fail because it makes the balance 0, 
+-- This update would fail because it makes the balance 0,
 -- causing the row to disappear from the view criteria.
 UPDATE sql_invoicing.invoices_with_balance
 SET payment_total = invoice_total
@@ -125,6 +130,7 @@ WHERE invoice_id = 2;
 ---
 
 ## 5- Other Benefits of Views 💎
+
 Views provide several secondary advantages beyond just query simplification:
 
 1.  **Reduce Impact of Change**: If your table structure changes, you can simply update the view definition without changing every single application query.
@@ -132,4 +138,5 @@ Views provide several secondary advantages beyond just query simplification:
 3.  **Encapsulation**: Views encapsulate complex join and aggregation logic, providing a cleaner API for data consumers.
 
 ---
-*Interview Favorite: "What is the difference between a View and a Table?" (Views don't store data; tables do).*
+
+_Interview Favorite: "What is the difference between a View and a Table?" (Views don't store data; tables do)._
