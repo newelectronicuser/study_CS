@@ -202,20 +202,48 @@ git branch -D bugfix/photo-upload
 
 ## 🏗️ Rebasing
 
-Moves the entire feature branch so it begins on the tip of the master branch.
+Rebasing is the process of moving or combining a sequence of commits to a new base commit. In practical terms, it "replays" your feature branch commits one by one on top of the latest commit of the master branch, resulting in a perfectly linear project history.
 
 > [!CAUTION]
-> **Golden Rule of Rebasing**: Only rebase local commits. Never rebase commits that have been pushed to a public repository.
+> **The Golden Rule**: Never rebase commits that have been pushed to a public/shared repository. Rebasing rewrites history, which will cause major issues for other collaborators.
+
+### Rebase vs. Merge
+- **Merge**: Preserves the complete history and the chronological order of commits, but can result in a messy "branchy" graph.
+- **Rebase**: Creates a clean, linear history by eliminating unnecessary merge commits, but obscures the actual timing of when changes were made.
+
+### Standard Rebase Workflow
 
 ```bash
+# 1. Switch to your feature branch
 git switch feature/shopping-cart
+
+# 2. Rebase onto the latest master
 git rebase master
 
-# Handling Conflicts during Rebase
-git rebase --continue    # Continue after manual resolution
+# 3. Handle Conflicts (if they occur)
+# Git will pause at the first problematic commit.
+# After manually resolving conflicts in your editor:
+git add .
+git rebase --continue
+
+# Other Rebase Controls:
 git rebase --skip        # Skip the current problematic commit
-git rebase --abort       # Cancel the rebase entirely
+git rebase --abort       # Cancel the rebase and return to original state
 ```
+
+### 🛠️ Interactive Rebase
+Interactive rebasing allows you to clean up your commit history before merging. Use it to squash, rename, or reorder commits.
+
+```bash
+# Open an interactive session for the last 5 commits
+git rebase -i HEAD~5
+```
+
+Inside the editor, you can change the keyword next to each commit:
+- `pick`: Use the commit as is.
+- `reword`: Use the commit, but edit the message.
+- `squash`: Meld the commit into the previous one.
+- `drop`: Remove the commit entirely.
 
 ### 🛠️ Mergetool Configuration
 
