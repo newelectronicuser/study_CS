@@ -158,6 +158,10 @@ git reset --mixed HEAD~1  # Undo commit, keeps changes unstaged
 git reset --hard HEAD~1   # Undo commit and DELETE all changes (CAUTION)
 ```
 
+![Soft Reset](files/Screenshot%20from%202026-03-26%2017-02-51.png)
+![Mixed Reset](files/Screenshot%20from%202026-03-26%2017-03-22.png)
+![Hard Reset](files/Screenshot%20from%202026-03-26%2017-04-21.png)
+
 ### After Pushing (Revert)
 
 ```bash
