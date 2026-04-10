@@ -194,6 +194,8 @@ git commit -am "Update toc.txt"
 git log --oneline --all --graph
 ```
 
+![Initial Messy Commits](files/Screenshot%20from%202026-03-26%2017-21-44.png)
+
 #### 2. The Squash Merge
 Switch back to master and condense the work.
 ```bash
@@ -212,6 +214,8 @@ git commit -m "Fix the bug on the photo upload page"
 # Now master is one commit ahead, but the individual 'fix' commits are gone from its timeline.
 git log --oneline --all --graph
 ```
+
+![Clean Squashed History](files/Screenshot%20from%202026-03-26%2017-26-06.png)
 
 #### 4. The Cleanup (Crucial)
 Because the history was rewritten into a single commit, Git doesn't recognize the feature branch as being "merged" in the traditional sense.
