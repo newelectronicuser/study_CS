@@ -213,23 +213,60 @@ Rebasing is the process of moving or combining a sequence of commits to a new ba
 
 ### Standard Rebase Workflow
 
-```bash
-# 1. Switch to your feature branch
-git switch feature/shopping-cart
+Imagine a scenario where both your `feature` branch and `master` branch have moved forward with new commits. Rebasing allows you to "re-base" your feature work on top of the latest master.
 
-# 2. Rebase onto the latest master
+#### 1. The Scenario
+You create a feature and commit work, while someone else (or you) adds a commit to master.
+```bash
+git switch -C feature/shopping-cart
+echo "hello" > cart.txt
+git commit -m "Add cart.txt"
+
+git switch master
+echo "hello" > toc.txt
+git commit -am "Update toc.txt"
+
+# View the divergence
+git log --oneline --all --graph
+```
+
+#### 2. The Rebase
+Move your feature commits so they start after the latest master commit.
+```bash
+git switch feature/shopping-cart
 git rebase master
 
-# 3. Handle Conflicts (if they occur)
-# Git will pause at the first problematic commit.
-# After manually resolving conflicts in your editor:
-git add .
-git rebase --continue
-
-# Other Rebase Controls:
-git rebase --skip        # Skip the current problematic commit
-git rebase --abort       # Cancel the rebase and return to original state
+# Now the history is linear! 
+git log --oneline --all --graph
 ```
+
+#### 3. The Payoff (Fast-forward Merge)
+Now that the feature branch is directly "ahead" of master, you can fast-forward master to the feature tip.
+```bash
+git switch master
+git merge feature/shopping-cart 
+
+# Result: master now includes the feature work without a merge commit.
+git log --oneline --all --graph
+```
+
+### ⚔️ Handling Rebase Conflicts
+If Git hits a conflict, the rebase will pause. You must resolve the conflict at each step:
+
+1. **Fix & Stage**: Open the conflicted files, resolve the issues, and stage them:
+   ```bash
+   # Use a mergetool if you have one configured
+   git mergetool
+   git add .
+   ```
+2. **Continue**: Tell Git to move to the next commit:
+   ```bash
+   git rebase --continue
+   ```
+
+**Other Rebase Controls:**
+- `git rebase --skip`: Skips the current commit and its changes (use with caution).
+- `git rebase --abort`: If the conflicts become too complex or frustrating, use this to cancel everything and return to your original state.
 
 ### 🛠️ Interactive Rebase
 Interactive rebasing allows you to clean up your commit history before merging. Use it to squash, rename, or reorder commits.
