@@ -176,27 +176,55 @@ Squash merging condenses all commits from a feature branch into a single, clean 
 - **Atomic Features**: Each feature is represented by exactly one commit.
 - **Easy Reverts**: If a feature breaks something, you only need to revert one commit.
 
-### Workflow
+### 🛠️ Squash Workflow
 
+Imagine a bugfix that takes several small, messy commits to solve. You want to bring those changes into `master` as one clean, atomic commit.
+
+#### 1. The Scenario
+Make several commits on a dedicated bugfix branch.
 ```bash
-# 1. Switch to the destination branch
-git switch master
+git switch -C bugfix/photo-upload
+echo "bugfix" >> audience.txt
+git commit -am "Update audience.txt"
 
-# 2. Perform the squash merge
-# This stages all changes from the feature branch but DOES NOT commit them.
+echo "bugfix" >> toc.txt
+git commit -am "Update toc.txt"
+
+# View your messy work
+git log --oneline --all --graph
+```
+
+#### 2. The Squash Merge
+Switch back to master and condense the work.
+```bash
+git switch master
 git merge --squash bugfix/photo-upload
 
-# 3. Create the consolidated commit
-git commit -m "Feature: implementation of photo upload with validation"
+# Check the state: changes are staged but not committed.
+git status
+```
 
-# 4. Cleanup
-# Git won't see this branch as 'merged' (since the history was rewritten), 
-# so you must use the capital -D to force delete it.
+#### 3. Finalizing the Commit
+Create the single, "squashed" commit with a professional message.
+```bash
+git commit -m "Fix the bug on the photo upload page"
+
+# Now master is one commit ahead, but the individual 'fix' commits are gone from its timeline.
+git log --oneline --all --graph
+```
+
+#### 4. The Cleanup (Crucial)
+Because the history was rewritten into a single commit, Git doesn't recognize the feature branch as being "merged" in the traditional sense.
+```bash
+git branch -d bugfix/photo-upload
+# Error: the branch 'bugfix/photo-upload' is not fully merged.
+
+# Use capital -D to force delete
 git branch -D bugfix/photo-upload
 ```
 
 > [!TIP]
-> Use squash merging for short-lived feature branches, but avoid it if you need to preserve the granular history of who did what and when.
+> Squash merging is perfect for "Git-flow" where feature branches are short-lived. Use it to keep your main integration branch clean and readable.
 
 ---
 
