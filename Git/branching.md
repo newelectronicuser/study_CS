@@ -82,21 +82,35 @@ Integrating changes from one branch into another.
 
 ### 1. Fast-forward Merges
 
-![Fast-forward Merges](files/Screenshot%20from%202026-03-25%2011-13-38.png)
-![Fast-forward Merges](files/Screenshot%20from%202026-03-25%2011-14-06.png)
+![Fast-forward Initial State](files/Screenshot%20from%202026-03-25%2011-13-38.png)
+![Fast-forward Result](files/Screenshot%20from%202026-03-25%2011-14-06.png)
 
-Occurs when the target branch hasn't diverged. Git simply moves the pointer forward.
+A fast-forward merge occurs when the current branch hasn't diverged from the branch you're merging. In this scenario, there is a linear path from the current branch tip to the target branch tip.
+
+**What Git Does:**
+Instead of creating a new "merge commit," Git simply moves (fast-forwards) the pointer of the current branch to the latest commit of the merged branch.
 
 ```bash
 git merge bugfix/signup-form
 ```
 
+> [!NOTE]
+> This results in a perfectly straight line in your history, but it doesn't leave a record of when the merge actually occurred.
+
 ### 2. Three-way Merges
 
-![Fast-forward Merges](files/Screenshot%20from%202026-03-25%2011-18-36.png)
-![Fast-forward Merges](files/Screenshot%20from%202026-03-25%2011-19-05.png)
+![Three-way Initial State](files/Screenshot%20from%202026-03-25%2011-18-36.png)
+![Three-way Result](files/Screenshot%20from%202026-03-25%2011-19-05.png)
 
-Occurs when both branches have diverged. Git creates a new "Merge Commit".
+A three-way merge occurs when the two branches have diverged. This means both the current branch and the feature branch have new, unique commits since they last split.
+
+**What Git Does:**
+Git uses three specific commits to perform the merge:
+1. The tip of the current branch (Master).
+2. The tip of the target branch (Feature).
+3. The **Common Ancestor** (the last point where they were identical).
+
+Git then automatically creates a new **Merge Commit** that has two parents, tying the histories back together.
 
 ```bash
 git merge feature/change-password
