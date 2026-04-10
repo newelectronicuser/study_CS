@@ -230,6 +230,8 @@ git commit -am "Update toc.txt"
 git log --oneline --all --graph
 ```
 
+![Diverged Branches](files/Screenshot%20from%202026-03-26%2017-49-11.png)
+
 #### 2. The Rebase
 Move your feature commits so they start after the latest master commit.
 ```bash
@@ -240,6 +242,8 @@ git rebase master
 git log --oneline --all --graph
 ```
 
+![After Rebase](files/Screenshot%20from%202026-03-26%2017-51-50.png)
+
 #### 3. The Payoff (Fast-forward Merge)
 Now that the feature branch is directly "ahead" of master, you can fast-forward master to the feature tip.
 ```bash
@@ -249,6 +253,8 @@ git merge feature/shopping-cart
 # Result: master now includes the feature work without a merge commit.
 git log --oneline --all --graph
 ```
+
+![Master Fast-forwarded](files/Screenshot%20from%202026-03-26%2017-58-46.png)
 
 ### ⚔️ Handling Rebase Conflicts
 If Git hits a conflict, the rebase will pause. You must resolve the conflict at each step:
