@@ -169,16 +169,34 @@ git revert -m 1 HEAD      # Revert to the first parent (usually master)
 
 ## 🔸 Squash Merging
 
-Condense all commits from a feature branch into a single commit on the master branch.
+Squash merging condenses all commits from a feature branch into a single, clean commit on the destination branch. This is ideal for keeping the `master` history concise by hiding small, incremental work-in-progress commits.
+
+### Why Squash?
+- **Cleaner History**: Avoids "Merge branch..." noise.
+- **Atomic Features**: Each feature is represented by exactly one commit.
+- **Easy Reverts**: If a feature breaks something, you only need to revert one commit.
+
+### Workflow
 
 ```bash
+# 1. Switch to the destination branch
 git switch master
-git merge --squash bugfix/photo-upload
-git commit -m "Fix photo upload bug"
 
-# Note: The original branch must be force-deleted after squashing
+# 2. Perform the squash merge
+# This stages all changes from the feature branch but DOES NOT commit them.
+git merge --squash bugfix/photo-upload
+
+# 3. Create the consolidated commit
+git commit -m "Feature: implementation of photo upload with validation"
+
+# 4. Cleanup
+# Git won't see this branch as 'merged' (since the history was rewritten), 
+# so you must use the capital -D to force delete it.
 git branch -D bugfix/photo-upload
 ```
+
+> [!TIP]
+> Use squash merging for short-lived feature branches, but avoid it if you need to preserve the granular history of who did what and when.
 
 ---
 
