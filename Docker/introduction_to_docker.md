@@ -59,6 +59,8 @@ A **Kernel** manages application and hardware resources. Docker's interaction wi
 - **Official Ubuntu Guide**: [Install Docker on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
 - **Management Tools**: [Portainer.io](https://www.portainer.io/)
 
+![Docker Installation](files/Screenshot%20from%202026-03-19%2008-28-28.png)
+
 ---
 
 ## 5. Development Workflow 🔄

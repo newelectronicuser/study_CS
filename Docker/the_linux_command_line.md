@@ -211,6 +211,8 @@ sleep 10 &               # Run a command in the BACKGROUND
 kill 146415              # Terminate a process using its Process ID (PID)
 ```
 
+![Linux Process Management](files/Screenshot%20from%202026-03-21%2016-55-39.png)
+
 ---
 
 ## 👥 Managing Users & Groups
