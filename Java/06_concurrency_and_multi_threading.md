@@ -41,17 +41,51 @@ In Java, you can start a thread in two main ways:
 - **`Thread.sleep(ms)`**: Puts the current thread into a **Timed Waiting** state. It does NOT release any locks it currently holds.
 - It throws a checked exception: `InterruptedException`.
 
+```java
+try {
+    System.out.println("Processing...");
+    Thread.sleep(2000); // Pauses thread for 2 seconds
+} catch (InterruptedException e) {
+    System.out.println("Thread was interrupted while sleeping");
+}
+```
+
 ---
 
 ## 5. Joining a Thread
 - **`thread.join()`**: The current thread will wait until the target `thread` has finished its execution.
 - Useful for coordinating dependencies between threads (e.g., waiting for a background data load to finish).
 
+```java
+Thread t1 = new Thread(() -> System.out.println("Task 1 finished"));
+t1.start();
+
+try {
+    t1.join(); // Main thread waits for t1 to finish before moving on
+    System.out.println("All tasks completed");
+} catch (InterruptedException e) {
+    e.printStackTrace();
+}
+```
+
 ---
 
 ## 6. Interrupting a Thread
 - **`thread.interrupt()`**: Sends a signal to the thread that it should stop what it's doing.
 - It doesn't force the thread to stop; the thread must check its own interrupted status (`isInterrupted()`) or catch `InterruptedException`.
+
+```java
+Thread worker = new Thread(() -> {
+    while (!Thread.currentThread().isInterrupted()) {
+        // Do heavy work...
+    }
+    System.out.println("Stopped gracefully");
+});
+worker.start();
+
+// Sometime later from the main thread
+worker.interrupt();
+```
 
 ---
 
@@ -66,6 +100,18 @@ The two biggest challenges in multi-threading are:
 A race condition occurs when the final result depends on the timing/interleaving of thread execution.
 - **Common Pattern**: "Check-then-Act" (e.g., `if (x == 10) x++`). Between the check and the act, another thread might have changed `x`.
 
+```java
+// Example of a race condition: Atomicity failure
+public class UnsafeCounter {
+    private int count = 0;
+    
+    // Multiple threads calling this can cause lost updates
+    public void increment() {
+        count++; // Not atomic! Consists of Read -> Increment -> Write
+    }
+}
+```
+
 ---
 
 ## 9. Strategies for Thread Safety
@@ -78,6 +124,15 @@ A race condition occurs when the final result depends on the timing/interleaving
 ## 10. Confinement (ThreadLocal)
 - **`ThreadLocal<T>`**: Provides variables that can only be read and written by the same thread.
 - Each thread that accesses such a variable has its own, independently initialized copy.
+
+```java
+ThreadLocal<SimpleDateFormat> formatter = ThreadLocal.withInitial(() -> 
+    new SimpleDateFormat("yyyy-MM-dd")
+);
+
+// This thread gets its own instance of SimpleDateFormat
+String date = formatter.get().format(new Date()); 
+```
 
 ---
 
@@ -101,12 +156,46 @@ The simplest way to implement thread safety using **Intrinsic Locks** (Monitors)
 - **Synchronized Method**: Locks the entire object (`this`).
 - **Synchronized Block**: Allows finer-grained locking on a specific object.
 
+```java
+public class SharedResource {
+    private int count = 0;
+
+    // Locks the whole object
+    public synchronized void increment() {
+        count++;
+    }
+
+    public void blockIncrement() {
+        // Locks only when strictly necessary
+        synchronized (this) {
+            count++;
+        }
+    }
+}
+```
+
 ---
 
 ## 13. The volatile Keyword
 Ensures that a variable is always read from and written to **Main Memory**, not CPU caches.
 - **Guarantees Visibility**, but NOT Atomicity.
 - Use it for flags (e.g., `volatile boolean stop = false`).
+
+```java
+public class TaskRunner extends Thread {
+    private volatile boolean running = true; // Guarantees changes are visible to other threads
+
+    public void run() {
+        while (running) {
+            // Do work
+        }
+    }
+
+    public void stopTask() {
+        running = false;
+    }
+}
+```
 
 ---
 
@@ -117,11 +206,31 @@ Low-level mechanism for threads to communicate.
 > [!IMPORTANT]
 > These methods MUST be called inside a **synchronized** block/method.
 
+```java
+public synchronized void produce() throws InterruptedException {
+    System.out.println("Producing...");
+    wait(); // Release lock and wait for signal
+    System.out.println("Resumed production!");
+}
+
+public synchronized void consume() throws InterruptedException {
+    Thread.sleep(1000); // Simulate work
+    notify(); // Wake up the waiting producing thread
+}
+```
+
 ---
 
 ## 15. Atomic Objects
 Classes like `AtomicInteger`, `AtomicBoolean`, and `AtomicReference` use low-level **CPU instructions (CAS - Compare and Swap)** to ensure atomicity without locking.
 - **Benefit**: Much faster than `synchronized` under low to moderate contention.
+
+```java
+AtomicInteger atomicCount = new AtomicInteger(0);
+
+// Atomically increments by one and returns the updated value
+int newCount = atomicCount.incrementAndGet();
+```
 
 ---
 
@@ -130,11 +239,33 @@ Introduced in Java 8 (`LongAdder`, `DoubleAdder`).
 - **Why?** When many threads update a single `AtomicLong`, they contend on one variable. 
 - **Solution**: `LongAdder` maintains a set of variables to distribute the contention and sums them up only when requested. Use it for high-concurrency counters.
 
+```java
+LongAdder hitCounter = new LongAdder();
+
+// Multiple threads can call this under high contention
+hitCounter.increment(); 
+
+// Evaluate the final sum
+long totalHits = hitCounter.sum();
+```
+
 ---
 
 ## 17. Synchronized Collections
 Methods like `Collections.synchronizedList(list)` wrap an existing collection to make it thread-safe.
 - **Drawback**: They use a single lock for the entire collection, which limits performance under high concurrency.
+
+```java
+List<String> normalList = new ArrayList<>();
+List<String> syncList = Collections.synchronizedList(normalList);
+
+// Iterating requires explicit synchronization on the list itself
+synchronized (syncList) {
+    for (String item : syncList) {
+        System.out.println(item);
+    }
+}
+```
 
 ---
 
@@ -142,6 +273,14 @@ Methods like `Collections.synchronizedList(list)` wrap an existing collection to
 Found in `java.util.concurrent`.
 - **`ConcurrentHashMap`**: Uses "Lock Stripping" (locking only segments of the map) to allow multiple threads to read/write concurrently.
 - **`CopyOnWriteArrayList`**: Creates a fresh copy of the underlying array for every modification. Great for frequent reads and rare writes.
+
+```java
+Map<String, Integer> map = new ConcurrentHashMap<>();
+map.put("Key", 1); // Thread-safe insertion without locking the whole map
+
+List<String> list = new CopyOnWriteArrayList<>();
+list.add("Safe"); // Reads are lock-free and fast, but this write makes a copy
+```
 
 ---
 

@@ -41,12 +41,30 @@ The `Iterable<T>` interface is the root of the collection hierarchy (though `Map
 - **Purpose**: It allows an object to be the target of the **"for-each loop"** statement.
 - **Method**: It defines a single method: `Iterator<T> iterator()`.
 
+```java
+List<String> names = Arrays.asList("Alice", "Bob");
+for (String name : names) { // Only possible because List implements Iterable
+    System.out.println(name);
+}
+```
+
 ---
 
 ## 4. The Iterator Interface
 An `Iterator` allows you to traverse a collection and safely remove elements during iteration (which a `for-each` loop cannot do without throwing `ConcurrentModificationException`).
 - **Methods**: `hasNext()`, `next()`, and `remove()`.
 - **ListIterator**: A specialized iterator for `List` that allows bidirectional traversal (`previous()`).
+
+```java
+List<Integer> numbers = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
+Iterator<Integer> it = numbers.iterator();
+while (it.hasNext()) {
+    if (it.next() % 2 == 0) {
+        it.remove(); // Safely remove element during traversal
+    }
+}
+// numbers is now [1, 3]
+```
 
 ---
 
@@ -77,6 +95,18 @@ A **List** is an ordered collection that allows duplicate elements.
     - Adding/Removing (ends): **O(1)**
 - **Use Case**: Frequently adding/removing elements from the beginning or end.
 
+```java
+// ArrayList Example
+List<String> arrayList = new ArrayList<>();
+arrayList.add("Java");
+System.out.println(arrayList.get(0)); // Fast access O(1)
+
+// LinkedList Example
+LinkedList<String> linkedList = new LinkedList<>();
+linkedList.addFirst("First"); // Fast insertion at start O(1)
+linkedList.addLast("Last");
+```
+
 ---
 
 ## 7. The Comparable Interface
@@ -84,6 +114,18 @@ Used for **Natural Ordering** of objects.
 - **Method**: `int compareTo(T o)`
 - **Rule**: If `this` < `o`, return negative; if `this` > `o`, return positive; else 0.
 - **Usage**: Typically implemented by the class itself (e.g., `String`, `Integer`).
+
+```java
+class User implements Comparable<User> {
+    int age;
+    public User(int age) { this.age = age; }
+    
+    @Override
+    public int compareTo(User other) {
+        return Integer.compare(this.age, other.age); // ascending order
+    }
+}
+```
 
 ---
 
@@ -93,6 +135,14 @@ Used for **Custom Ordering**.
 - **Benefit**: You can define multiple sorting strategies without modifying the original class.
 - **Usage**: `Collections.sort(list, new MyComparator())`.
 
+```java
+List<String> words = Arrays.asList("apple", "banana", "kiwi");
+
+// Using Comparator via Lambda to sort by length instead of alphabetical order
+words.sort((s1, s2) -> Integer.compare(s1.length(), s2.length()));
+// Or better: words.sort(Comparator.comparingInt(String::length));
+```
+
 ---
 
 ## 9. The Queue Interface
@@ -100,6 +150,19 @@ Designed for holding elements prior to processing.
 
 - **PriorityQueue**: Elements are ordered according to their natural ordering or a `Comparator`. (Implemented as a Min-Heap).
 - **Deque (Double Ended Queue)**: Supports element insertion and removal at both ends. `ArrayDeque` is usually faster than `Stack` and `LinkedList`.
+
+```java
+Queue<String> pq = new PriorityQueue<>();
+pq.offer("C");
+pq.offer("A");
+pq.offer("B");
+System.out.println(pq.poll()); // Prints "A" (natural ordering)
+
+Deque<Integer> stack = new ArrayDeque<>();
+stack.push(1); // ArrayDeque used as a Stack
+stack.push(2);
+System.out.println(stack.pop()); // Prints "2"
+```
 
 ---
 
@@ -109,6 +172,15 @@ A collection that contains **no duplicate elements**.
 - **HashSet**: Backed by a `HashMap`. Unordered and allows one null element.
 - **LinkedHashSet**: Maintains insertion order using a doubly-linked list.
 - **TreeSet**: Maintains elements in sorted order (using a Red-Black Tree). **O(log n)** for basic operations.
+
+```java
+Set<String> hashSet = new HashSet<>();
+hashSet.add("Apple");
+hashSet.add("Apple"); // Ignored
+
+Set<Integer> treeSet = new TreeSet<>(Arrays.asList(5, 1, 10));
+System.out.println(treeSet); // Prints [1, 5, 10] (Sorted)
+```
 
 ---
 
@@ -132,6 +204,21 @@ Maps store data in **Key-Value** pairs. Keys must be unique.
 | **LinkedHashMap** | Insertion Order | **O(1)** average |
 | **TreeMap** | Sorted Order | **O(log n)** |
 | **Hashtable** | Unordered | Synchronized (Slow/Legacy) |
+
+```java
+Map<String, Integer> map = new HashMap<>();
+map.put("Alice", 25);
+map.put("Bob", 30);
+
+// Using putIfAbsent and getOrDefault
+map.putIfAbsent("Charlie", 28);
+System.out.println(map.getOrDefault("Dave", 0)); // Prints 0
+
+// Iterating over a Map
+for (Map.Entry<String, Integer> entry : map.entrySet()) {
+    System.out.println(entry.getKey() + " -> " + entry.getValue());
+}
+```
 
 > [!TIP]
 > Always use `HashMap` for general use. Use `ConcurrentHashMap` if thread-safety is required in a multi-threaded environment.

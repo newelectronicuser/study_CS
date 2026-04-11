@@ -5,12 +5,36 @@ With Java 8, the language moved towards **Functional Programming**. This shift a
 
 - **Objective**: To support cleaner, more concise, and readable code, especially when working with collections (Streams).
 
+```java
+// Traditional style vs Functional style
+List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+// Pre-Java 8
+for (Integer n : numbers) {
+    System.out.print(n);
+}
+
+// Java 8+
+numbers.forEach(System.out::print);
+```
+
 ---
 
 ## 2. Functional Interfaces
 A **Functional Interface** is an interface that contains **exactly one** abstract method. It can have multiple `default` or `static` methods.
 - **Annotation**: `@FunctionalInterface` (Optional but recommended to prevent accidental addition of methods).
 - **SAM Principle**: Single Abstract Method.
+
+```java
+@FunctionalInterface
+public interface StringProcessor {
+    String process(String input); // Single abstract method
+    
+    default void printInfo() {    // Allowed default method
+        System.out.println("Processing string...");
+    }
+}
+```
 
 ---
 
@@ -51,6 +75,17 @@ Lambdas can access variables from their enclosing scope. However:
 - **Rule**: Local variables accessed by a lambda must be **final** or **effectively final** (assigned only once).
 - **Why?** Since lambdas might run in another thread, Java captures the *value* of the variable. If the variable changes later in the main thread, the behavior becomes unpredictable.
 
+```java
+public void captureExample() {
+    int multiplier = 2; // Effectively final
+    
+    // Valid: Using 'multiplier' inside lambda
+    Function<Integer, Integer> multiply = n -> n * multiplier;
+    
+    // Invalid: multiplier = 3; // Will cause compilation error in lambda above
+}
+```
+
 ---
 
 ## 6. Method References
@@ -62,6 +97,16 @@ Method references act as a syntactic shorthand for lambdas that only call an exi
 | **Instance (Specific)** | `str::toUpperCase` | `() -> str.toUpperCase()` |
 | **Arbitrary Instance** | `String::toLowerCase` | `(s) -> s.toLowerCase()` |
 | **Constructor** | `ArrayList::new` | `() -> new ArrayList<>()` |
+
+```java
+List<String> list = Arrays.asList("apple", "banana");
+
+// Lambda approach
+list.forEach(s -> System.out.println(s));
+
+// Method Reference approach
+list.forEach(System.out::println);
+```
 
 ---
 
@@ -116,20 +161,47 @@ Integer len = lengthFunc.apply("Antigravity"); // 11
 ---
 
 ## 12. Composing & Chaining Functions
-Functions can be composed using `andThen()` and `compose()`.
+Functions can be composed using `andThen()` and `compose()` to build complex data processing pipelines.
 
-- **andThen**: f before g (`f.andThen(g)` -> `g(f(x))`)
-- **compose**: g before f (`f.compose(g)` -> `f(g(x))`)
+- **`andThen`**: Execute caller `f` first, then parameter `g` (`f.andThen(g)` -> `g(f(x))`)
+- **`compose`**: Execute parameter `g` first, then caller `f` (`f.compose(g)` -> `f(g(x))`)
+- **`Function.identity()`**: Returns a function that always returns its input argument.
 
+### Example 1: Mathematical Operations
 ```java
 Function<Integer, Integer> add = i -> i + 1;
 Function<Integer, Integer> mult = i -> i * 2;
 
-// Output: (1 + 1) * 2 = 4
+// Output: (1 + 1) * 2 = 4 (add runs first, then mult)
 System.out.println(add.andThen(mult).apply(1));
 
-// Output: (1 * 2) + 1 = 3
+// Output: (1 * 2) + 1 = 3 (mult runs first, then add)
 System.out.println(add.compose(mult).apply(1));
+```
+
+### Example 2: String Formatting Pipeline (Chaining multiple times)
+```java
+Function<String, String> strip = String::trim;
+Function<String, String> upper = String::toUpperCase;
+Function<String, String> addQuotes = s -> "\"" + s + "\"";
+
+// Pipeline: strip -> upper -> addQuotes
+Function<String, String> formatString = strip.andThen(upper).andThen(addQuotes);
+
+System.out.println(formatString.apply("   hello java   ")); 
+// Output: "HELLO JAVA"
+```
+
+### Example 3: Parsing and Transforming
+Functions can transform from one type to another across the chain (`Function<T, R>`).
+```java
+Function<String, Integer> parseStr = Integer::parseInt;
+Function<Integer, Boolean> isEven = num -> num % 2 == 0;
+
+Function<String, Boolean> isStringEven = parseStr.andThen(isEven);
+
+System.out.println(isStringEven.apply("42")); // Output: true
+System.out.println(isStringEven.apply("15")); // Output: false
 ```
 
 ---

@@ -30,6 +30,16 @@ There are multiple ways to initialize a stream:
     - `Stream.iterate(0, n -> n + 1).limit(10)` (Infinite streams)
     - `Stream.generate(Math::random).limit(5)`
 
+```java
+List<String> list = Arrays.asList("a", "b", "c");
+Stream<String> colStream = list.stream();
+
+String[] arr = {"x", "y", "z"};
+Stream<String> arrStream = Arrays.stream(arr);
+
+Stream<Integer> factoryStream = Stream.of(1, 2, 3);
+```
+
 ---
 
 ## 5. Mapping Elements
@@ -37,6 +47,20 @@ Mapping is used to transform elements in a stream.
 
 - **map()**: One-to-one transformation (e.g., `String` to `Integer`).
 - **flatMap()**: One-to-many transformation. Flattens a stream of collections (e.g., `Stream<List<Integer>>` becomes `Stream<Integer>`).
+
+```java
+// map() example
+List<String> names = List.of("alice", "bob");
+List<Integer> nameLengths = names.stream()
+    .map(String::length)
+    .collect(Collectors.toList()); // [5, 3]
+
+// flatMap() example
+List<List<Integer>> nested = List.of(List.of(1, 2), List.of(3, 4));
+List<Integer> flat = nested.stream()
+    .flatMap(List::stream)
+    .collect(Collectors.toList()); // [1, 2, 3, 4]
+```
 
 ---
 
@@ -58,18 +82,41 @@ Used to extract a sub-portion of a stream:
 - **takeWhile(predicate)**: Returns elements until the predicate becomes false.
 - **dropWhile(predicate)**: Drops elements until the predicate becomes false.
 
+```java
+Stream.of(1, 2, 3, 4, 5).limit(3); // [1, 2, 3]
+Stream.of(1, 2, 3, 4, 5).skip(2);  // [3, 4, 5]
+
+// Java 9+: Stops as soon as condition fails
+Stream.of(1, 2, 3, 4, 1).takeWhile(n -> n < 4); // [1, 2, 3]
+
+// Java 9+: Drops until condition fails, then keeps the rest
+Stream.of(1, 2, 3, 4, 1).dropWhile(n -> n < 4); // [4, 1]
+```
+
 ---
 
 ## 8. Sorting Elements
 Use the `sorted()` method. You can provide a custom `Comparator`.
 ```java
-list.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+// Natural order
+List<Integer> sorted = Stream.of(5, 1, 3).sorted().collect(Collectors.toList()); // [1, 3, 5]
+
+// Custom Comparator
+List<String> byLength = Stream.of("apple", "pie", "banana")
+    .sorted(Comparator.comparingInt(String::length))
+    .collect(Collectors.toList()); // [pie, apple, banana]
 ```
 
 ---
 
 ## 9. Getting Unique Elements
 The `distinct()` method uses `hashCode()` and `equals()` to remove duplicates from a stream.
+
+```java
+List<Integer> unique = Stream.of(1, 2, 2, 3, 1)
+    .distinct()
+    .collect(Collectors.toList()); // [1, 2, 3]
+```
 
 ---
 
@@ -78,11 +125,24 @@ The `peek()` method is primarily for **debugging**. It allows you to see the ele
 > [!CAUTION]
 > Do not use `peek()` for production logic; use it only to understand the state of the stream during testing.
 
+```java
+long count = Stream.of("a", "b", "c")
+    .peek(e -> System.out.println("Processing: " + e))
+    .count();
+```
+
 ---
 
 ## 11. Simple Reducers
 Terminal operations that reduce a stream to a single value:
 - `count()`, `min(comparator)`, `max(comparator)`, `sum()` (on primitive streams).
+
+```java
+long totalElements = Stream.of(1, 2, 3).count(); // 3
+
+Optional<Integer> maxVal = Stream.of(1, 5, 3)
+    .max(Comparator.naturalOrder()); // Optional[5]
+```
 
 ---
 
@@ -101,6 +161,18 @@ The `collect()` method is a terminal operation that transforms stream elements i
 - `Collectors.toSet()`
 - `Collectors.toMap(keyMapper, valueMapper)`
 - `Collectors.joining(", ")` (for concatenating strings)
+
+```java
+List<String> items = List.of("apple", "banana", "apple");
+
+Set<String> uniqueItems = items.stream().collect(Collectors.toSet());
+
+Map<String, Integer> lengthMap = items.stream()
+    .distinct()
+    .collect(Collectors.toMap(s -> s, String::length)); // {banana=6, apple=5}
+
+String csv = items.stream().collect(Collectors.joining(", ")); // "apple, banana, apple"
+```
 
 ---
 
@@ -126,6 +198,14 @@ Map<Boolean, List<Student>> passFail = students.stream()
 Specialized streams to avoid the overhead of **Autoboxing** and **Unboxing**.
 - **IntStream**, **LongStream**, **DoubleStream**.
 - They provide specialized reducers like `sum()`, `average()`, and `summaryStatistics()`.
+
+```java
+int sum = IntStream.rangeClosed(1, 5).sum(); // 15
+
+IntSummaryStatistics stats = IntStream.of(1, 2, 3, 4, 5).summaryStatistics();
+System.out.println(stats.getMax()); // 5
+System.out.println(stats.getAverage()); // 3.0
+```
 
 ---
 
