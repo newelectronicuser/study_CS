@@ -3,6 +3,12 @@
 ## 1. Introduction
 **Generics** were introduced in Java 5 to provide **stronger type checks at compile time** and to support generic programming. They allow types (classes, interfaces, and methods) to be parameters when defining them.
 
+### 🗝️ Key Terminology
+*   **Generics**: The broad language feature (the umbrella term).
+*   **Generic Class**: A class defined with type parameters (e.g., `class Box<T>`).
+*   **Generic Method**: A method that introduces its own type parameters (e.g., `<T> void doSomething(T t)`).
+*   **Parameterized Type**: An instantiation of a generic type with actual type arguments (e.g., `Box<String>`).
+
 - **Primary Goal**: Type Safety.
 - **Key Benefit**: Eliminates the need for explicit casting and prevents `ClassCastException` at runtime.
 
