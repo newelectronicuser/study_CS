@@ -1,250 +1,435 @@
-# Lambda Expressions & Functional Interfaces - Interview Notes ⚡
+# Lambda Expressions & Functional Interfaces — Interview Notes ⚡
 
 ## 1. Introduction
-With Java 8, the language moved towards **Functional Programming**. This shift allowed developers to treat functions as first-class citizens, meaning they can be passed as arguments, returned from methods, and stored in variables.
+With Java 8, the language moved towards **Functional Programming** — functions became first-class citizens that can be stored in variables, passed as arguments, and returned from methods.
 
-- **Objective**: To support cleaner, more concise, and readable code, especially when working with collections (Streams).
+- **Objective**: Cleaner, concise, readable code — especially for Collections and Streams.
 
 ```java
-// Traditional style vs Functional style
-List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
-
 // Pre-Java 8
-for (Integer n : numbers) {
-    System.out.print(n);
-}
+for (Integer n : numbers) System.out.print(n);
 
 // Java 8+
-numbers.forEach(System.out::print);
+numbers.forEach(System.out::print); // method reference
 ```
 
 ---
 
-## 2. Functional Interfaces
-A **Functional Interface** is an interface that contains **exactly one** abstract method. It can have multiple `default` or `static` methods.
-- **Annotation**: `@FunctionalInterface` (Optional but recommended to prevent accidental addition of methods).
-- **SAM Principle**: Single Abstract Method.
+## 2. Functional Interface
+An interface with **exactly one** abstract method (**SAM — Single Abstract Method**).
 
 ```java
 @FunctionalInterface
-public interface StringProcessor {
-    String process(String input); // Single abstract method
-    
-    default void printInfo() {    // Allowed default method
-        System.out.println("Processing string...");
+public interface Printer {
+    void print(String message);       // single abstract method
+
+    default void info() {             // allowed: default method
+        System.out.println("Printer ready.");
     }
 }
 ```
 
+> [!IMPORTANT]
+> `@FunctionalInterface` is optional but recommended — the compiler will enforce the SAM rule.
+
 ---
 
-## 3. Anonymous Inner Classes (Pre-Java 8)
-Before lambdas, we used anonymous inner classes to provide implementation on the fly.
+## 3. Anonymous Inner Class → Lambda Evolution
+
 ```java
-button.addActionListener(new ActionListener() {
+// Old: Anonymous inner class (verbose)
+Printer p = new Printer() {
     @Override
-    public void actionPerformed(ActionEvent e) {
-        System.out.println("Button Clicked!");
-    }
-});
+    public void print(String message) { System.out.println(message); }
+};
+
+// New: Lambda (concise)
+Printer p = message -> System.out.println(message);
+
+// Even shorter: Method reference
+Printer p = System.out::println;
 ```
-**The Problem**: Boilerplate code (verbose) and hard to read.
 
 ---
 
-## 4. Lambda Expressions
-A **Lambda Expression** is an anonymous function (no name, no return type, no modifier). It provides a concise way to implement a functional interface.
+## 4. Lambda Syntax
 
-**Syntax**: `(parameters) -> { body }`
+```
+(parameters) -> expression           // expression lambda — implicit return
+(parameters) -> { statements; }      // block lambda — explicit return required
+```
 
 ```java
-// Expression Lambda (implicit return)
-(a, b) -> a + b;
+// No parameters
+Runnable r = () -> System.out.println("Hello");
 
-// Block Lambda (explicit return)
-(a, b) -> {
-    int sum = a + b;
-    return sum;
+// One parameter (parentheses optional)
+Consumer<String> c = s -> System.out.println(s);
+
+// Multiple parameters
+BinaryOperator<Integer> add = (a, b) -> a + b;
+
+// Block body
+Function<Integer, Integer> factorial = n -> {
+    int result = 1;
+    for (int i = 2; i <= n; i++) result *= i;
+    return result;
 };
+
+// Explicit type (rarely needed — type inference handles it)
+Function<Integer, Integer> sq = (Integer n) -> n * n;
 ```
 
 ---
 
 ## 5. Variable Capture
-Lambdas can access variables from their enclosing scope. However:
-- **Rule**: Local variables accessed by a lambda must be **final** or **effectively final** (assigned only once).
-- **Why?** Since lambdas might run in another thread, Java captures the *value* of the variable. If the variable changes later in the main thread, the behavior becomes unpredictable.
+Lambdas can capture variables from the enclosing scope.
+
+| Variable type | Mutable inside lambda? | Rule |
+| :--- | :---: | :--- |
+| Local variable | ❌ | Must be **effectively final** |
+| Instance field | ✅ | Accessed via `this` |
+| Static field | ✅ | No restriction |
 
 ```java
-public void captureExample() {
-    int multiplier = 2; // Effectively final
-    
-    // Valid: Using 'multiplier' inside lambda
-    Function<Integer, Integer> multiply = n -> n * multiplier;
-    
-    // Invalid: multiplier = 3; // Will cause compilation error in lambda above
+int factor = 3; // effectively final (never reassigned)
+Function<Integer, Integer> triple = n -> n * factor; // ✅ OK
+
+// factor = 4; // ❌ would break lambda — not effectively final anymore
+
+// Loop variable capture — must copy to effectively-final local
+List<Runnable> tasks = new ArrayList<>();
+for (int i = 0; i < 3; i++) {
+    final int captured = i;  // copy is effectively final
+    tasks.add(() -> System.out.println("Task " + captured));
 }
 ```
 
 ---
 
-## 6. Method References
-Method references act as a syntactic shorthand for lambdas that only call an existing method.
+## 6. Method References — 4 Kinds
 
-| Type | Syntax | Lambda Equivalent |
+| Kind | Syntax | Lambda Equivalent |
 | :--- | :--- | :--- |
-| **Static** | `Math::max` | `(x, y) -> Math.max(x, y)` |
-| **Instance (Specific)** | `str::toUpperCase` | `() -> str.toUpperCase()` |
-| **Arbitrary Instance** | `String::toLowerCase` | `(s) -> s.toLowerCase()` |
+| **Static method** | `Math::max` | `(x, y) -> Math.max(x, y)` |
+| **Instance (specific object)** | `str::toUpperCase` | `() -> str.toUpperCase()` |
+| **Instance (arbitrary object)** | `String::toLowerCase` | `s -> s.toLowerCase()` |
 | **Constructor** | `ArrayList::new` | `() -> new ArrayList<>()` |
 
 ```java
-List<String> list = Arrays.asList("apple", "banana");
+// a) Static
+BinaryOperator<Integer> max = Math::max;
 
-// Lambda approach
-list.forEach(s -> System.out.println(s));
+// b) Specific instance
+String prefix = "Hello";
+Supplier<String> greet = prefix::toUpperCase;
 
-// Method Reference approach
+// c) Arbitrary instance (works on any String passed as argument)
+Function<String, String> lower = String::toLowerCase;
+list.forEach(System.out::println); // System.out is the specific instance
+
+// d) Constructor reference
+Supplier<List<String>> factory = ArrayList::new;
+List<String> list = factory.get();
+
+// e) Instance method with arg (BiFunction)
+BiFunction<String, String, Boolean> startsWith = String::startsWith;
+startsWith.apply("apple", "app"); // true
+```
+
+---
+
+## 7. Built-in Functional Interfaces (`java.util.function`)
+
+| Interface | Abstract Method | Input → Output | Use Case |
+| :--- | :--- | :--- | :--- |
+| `Consumer<T>` | `void accept(T t)` | T → void | Side effects (print, save) |
+| `BiConsumer<T,U>` | `void accept(T t, U u)` | T, U → void | Map entries, 2-arg operations |
+| `Supplier<T>` | `T get()` | () → T | Lazy init, factory, default value |
+| `Function<T,R>` | `R apply(T t)` | T → R | Transform / map |
+| `BiFunction<T,U,R>` | `R apply(T t, U u)` | T, U → R | Two-input transform |
+| `Predicate<T>` | `boolean test(T t)` | T → boolean | Filter / validate |
+| `BiPredicate<T,U>` | `boolean test(T t, U u)` | T, U → boolean | Two-input check |
+| `UnaryOperator<T>` | `T apply(T t)` | T → T | Same-type transform |
+| `BinaryOperator<T>` | `T apply(T t1, T t2)` | T, T → T | Same-type combine |
+
+---
+
+## 8. `Consumer<T>` — void accept(T t)
+
+```java
+Consumer<String> print  = s -> System.out.println("Print:  " + s);
+Consumer<String> upper  = s -> System.out.println("Upper:  " + s.toUpperCase());
+
+// Chaining — andThen() — all consumers operate on the SAME input
+Consumer<String> both = print.andThen(upper);
+both.accept("Java");
+// Print:  Java
+// Upper:  JAVA
+
+// Practical: List.forEach uses Consumer
 list.forEach(System.out::println);
 ```
 
 ---
 
-## 7. Built-in Functional Interfaces
-The `java.util.function` package provides a set of reusable functional interfaces.
+## 9. `BiConsumer<T,U>` — void accept(T t, U u)
 
-| Interface | Method | Description |
+```java
+BiConsumer<String, Integer> entry = (k, v) -> System.out.println(k + " → " + v);
+entry.accept("Alice", 95);
+
+// Map.forEach uses BiConsumer
+scores.forEach((k, v) -> System.out.println(k + ": " + v));
+```
+
+---
+
+## 10. `Supplier<T>` — T get()
+
+```java
+Supplier<Double> random = Math::random;       // no args, returns value
+Supplier<List<String>> factory = ArrayList::new; // lazy construction
+
+// Key pattern: Optional.orElseGet — avoids creating object if not needed
+String val = optional.orElseGet(() -> "computed default");
+```
+
+> [!TIP]
+> Use `Supplier` for **lazy evaluation** — the object/value is created only when `get()` is called.
+
+---
+
+## 11. `Function<T,R>` — R apply(T t)
+
+```java
+Function<String, Integer> length = String::length;
+length.apply("hello"); // 5
+
+// andThen: f.andThen(g) → g(f(x))
+Function<Integer, Integer> add1   = n -> n + 1;
+Function<Integer, Integer> times3 = n -> n * 3;
+add1.andThen(times3).apply(1); // (1+1)*3 = 6
+
+// compose: f.compose(g) → f(g(x))
+add1.compose(times3).apply(1); // (1*3)+1 = 4
+
+// identity() — no-op placeholder
+Function<String, String> id = Function.identity(); // s -> s
+
+// Type-changing chain
+Function<String, Boolean> isEvenStr =
+    ((Function<String, Integer>) Integer::parseInt)
+        .andThen(n -> n % 2 == 0);
+isEvenStr.apply("42"); // true
+```
+
+---
+
+## 12. `BiFunction<T,U,R>` — R apply(T t, U u)
+
+```java
+BiFunction<String, Integer, String> repeat = (s, n) -> s.repeat(n);
+repeat.apply("ha", 3); // hahaha
+
+// andThen chains a Function after the BiFunction
+BiFunction<Integer, Integer, String> multToStr =
+    ((BiFunction<Integer, Integer, Integer>) (a, b) -> a * b)
+        .andThen(n -> "Result=" + n);
+multToStr.apply(4, 5); // Result=20
+```
+
+---
+
+## 13. `Predicate<T>` — boolean test(T t)
+
+```java
+Predicate<String> isLong   = s -> s.length() > 5;
+Predicate<String> hasUpper = s -> s.chars().anyMatch(Character::isUpperCase);
+
+// Logical combinations
+isLong.and(hasUpper);   // both must be true
+isLong.or(hasUpper);    // at least one must be true
+isLong.negate();         // logical NOT
+
+// Predicate.not() — Java 11+, perfect with method references
+list.stream().filter(Predicate.not(String::isBlank)).forEach(System.out::println);
+
+// Practical: filter with composed predicates
+Predicate<Integer> isEven = n -> n % 2 == 0;
+Predicate<Integer> gt5    = n -> n > 5;
+nums.stream().filter(isEven.and(gt5)).forEach(System.out::print); // 6 8 10
+```
+
+---
+
+## 14. `BiPredicate<T,U>` — boolean test(T t, U u)
+
+```java
+BiPredicate<String, Integer> longerThan = (s, n) -> s.length() > n;
+longerThan.test("hello", 3); // true
+
+BiPredicate<String, String> startsWith = String::startsWith;
+```
+
+---
+
+## 15. `UnaryOperator<T>` — extends `Function<T,T>`
+
+```java
+UnaryOperator<Integer> square    = n -> n * n;
+UnaryOperator<Integer> increment = n -> n + 1;
+
+increment.andThen(square).apply(1); // (1+1)^2 = 4
+increment.compose(square).apply(1); // (1^2)+1 = 2
+
+UnaryOperator<String> shout = s -> s.toUpperCase() + "!";
+
+// Practical: List.replaceAll uses UnaryOperator
+list.replaceAll(String::toUpperCase);
+```
+
+---
+
+## 16. `BinaryOperator<T>` — extends `BiFunction<T,T,T>`
+
+```java
+BinaryOperator<Integer> add = (a, b) -> a + b;
+add.apply(3, 4); // 7
+
+// minBy / maxBy static factories
+BinaryOperator<Integer> min = BinaryOperator.minBy(Comparator.naturalOrder());
+BinaryOperator<Integer> max = BinaryOperator.maxBy(Comparator.naturalOrder());
+
+// Practical: Stream.reduce uses BinaryOperator
+int sum     = nums.stream().reduce(0, Integer::sum);
+int product = nums.stream().reduce(1, (a, b) -> a * b);
+Optional<Integer> opt = nums.stream().reduce((a, b) -> a * b); // no identity → Optional
+```
+
+---
+
+## 17. Primitive Specialisations — Avoid Boxing Overhead
+
+| Interface | Signature | Purpose |
 | :--- | :--- | :--- |
-| **Consumer<T>** | `void accept(T t)` | Takes an input, returns nothing. |
-| **Supplier<T>** | `T get()` | Takes nothing, returns an object. |
-| **Function<T, R>** | `R apply(T t)` | Takes an input, returns a result. |
-| **Predicate<T>** | `boolean test(T t)` | Takes an input, returns a boolean. |
+| `IntFunction<R>` | `R apply(int value)` | int → R |
+| `ToIntFunction<T>` | `int applyAsInt(T t)` | T → int |
+| `IntUnaryOperator` | `int applyAsInt(int n)` | int → int |
+| `IntBinaryOperator` | `int applyAsInt(int a, int b)` | int, int → int |
+| `IntPredicate` | `boolean test(int n)` | int → boolean |
+| `IntConsumer` | `void accept(int n)` | int → void |
+| `IntSupplier` | `int getAsInt()` | () → int |
 
----
-
-## 8. The Consumer Interface
-Used when you want to perform an operation on an object without returning anything (Side-effect).
 ```java
-Consumer<String> printer = s -> System.out.println(s);
-printer.accept("Hello Functions!");
+ToIntFunction<String>  len      = String::length;   // no boxing
+IntUnaryOperator       doubleIt = n -> n * 2;
+IntBinaryOperator      addInts  = (a, b) -> a + b;
+IntPredicate           isEven   = n -> n % 2 == 0;
 ```
 
 ---
 
-## 9. Chaining Consumer
-Use `andThen()` to run multiple consumers sequentially on the same input.
+## 18. Function Composition Pipeline
+
 ```java
-Consumer<String> c1 = s -> System.out.println(s.toUpperCase());
-Consumer<String> c2 = s -> System.out.println(s.toLowerCase());
-c1.andThen(c2).accept("Java"); 
-// Output: JAVA \n java
+// Each transformation step is a reusable function
+UnaryOperator<String> trim      = String::trim;
+UnaryOperator<String> toLower   = String::toLowerCase;
+UnaryOperator<String> addPrefix = s -> "user_" + s;
+Predicate<String>     nonEmpty  = s -> !s.isEmpty();
+
+// Build a sanitize pipeline
+Function<String, String> sanitize = trim.andThen(toLower).andThen(addPrefix);
+
+for (String input : rawInputs) {
+    String trimmed = trim.apply(input);
+    if (nonEmpty.test(trimmed)) System.out.println(sanitize.apply(input));
+}
+
+// String formatting pipeline
+Function<String, String> format =
+    ((Function<String, String>) String::trim)
+        .andThen(String::toUpperCase)
+        .andThen(s -> "\"" + s + "\"");
+format.apply("  hello  "); // "HELLO"
 ```
 
 ---
 
-## 10. The Supplier Interface
-Used for **lazy generation** of values. It doesn't take any parameters but returns a result.
+## 19. Higher-order Functions — Returning Lambdas
+
 ```java
-Supplier<Double> randomGen = () -> Math.random();
-System.out.println(randomGen.get());
+// Method that returns a Predicate (parameterised behaviour)
+static Predicate<Integer> greaterThan(int threshold) {
+    return n -> n > threshold; // threshold is captured (effectively final)
+}
+
+Predicate<Integer> gt5  = greaterThan(5);
+Predicate<Integer> gt10 = greaterThan(10);
+
+// Method that returns a multiplier Function
+static Function<Integer, Integer> multiplierOf(int factor) {
+    return n -> n * factor;
+}
+
+Function<Integer, Integer> triple     = multiplierOf(3);
+Function<Integer, Integer> quadruple  = multiplierOf(4);
+Function<Integer, Integer> tripleThenQuadruple = triple.andThen(quadruple);
+tripleThenQuadruple.apply(2); // (2*3)*4 = 24
 ```
 
 ---
 
-## 11. The Function Interface
-Represents a function that transforms an input of type `T` to a result of type `R`.
+## 20. Passing Lambdas as Parameters
+
 ```java
-Function<String, Integer> lengthFunc = s -> s.length();
-Integer len = lengthFunc.apply("Antigravity"); // 11
+// Utility accepts any Consumer → caller decides behaviour
+static <T> void processAll(List<T> list, Consumer<T> action) {
+    for (T item : list) action.accept(item);
+}
+processAll(names, s -> System.out.println("Hello, " + s));
+
+// Utility accepts any Predicate → caller decides filter rule
+static <T> List<T> filter(List<T> list, Predicate<T> predicate) {
+    List<T> result = new ArrayList<>();
+    for (T item : list) if (predicate.test(item)) result.add(item);
+    return result;
+}
+filter(nums, n -> n % 2 == 0); // evens
+filter(nums, n -> n > 5);      // > 5
+
+// Utility accepts any Function → caller decides transformation
+static <T, R> List<R> transform(List<T> list, Function<T, R> mapper) {
+    List<R> result = new ArrayList<>();
+    for (T item : list) result.add(mapper.apply(item));
+    return result;
+}
+transform(nums, n -> n * 2);   // doubled
+transform(nums, n -> n * n);   // squared
 ```
 
 ---
 
-## 12. Composing & Chaining Functions
-Functions can be composed using `andThen()` and `compose()` to build complex data processing pipelines.
+## 21. Summary Table
 
-- **`andThen`**: Execute caller `f` first, then parameter `g` (`f.andThen(g)` -> `g(f(x))`)
-- **`compose`**: Execute parameter `g` first, then caller `f` (`f.compose(g)` -> `f(g(x))`)
-- **`Function.identity()`**: Returns a function that always returns its input argument.
+| Interface | Input | Output | Key Methods | Common Use |
+| :--- | :---: | :---: | :--- | :--- |
+| `Consumer<T>` | 1 | void | `accept`, `andThen` | `forEach`, print, save |
+| `BiConsumer<T,U>` | 2 | void | `accept`, `andThen` | `Map.forEach` |
+| `Supplier<T>` | 0 | 1 | `get` | Lazy init, `orElseGet` |
+| `Function<T,R>` | 1 | 1 | `apply`, `andThen`, `compose` | `map` in streams |
+| `BiFunction<T,U,R>` | 2 | 1 | `apply`, `andThen` | Two-arg transform |
+| `Predicate<T>` | 1 | boolean | `test`, `and`, `or`, `negate` | `filter` in streams |
+| `BiPredicate<T,U>` | 2 | boolean | `test`, `and`, `or` | Two-arg condition |
+| `UnaryOperator<T>` | 1 | 1 (same) | `apply`, `andThen` | `replaceAll` |
+| `BinaryOperator<T>` | 2 | 1 (same) | `apply` | `reduce` |
 
-### Example 1: Mathematical Operations
-```java
-Function<Integer, Integer> add = i -> i + 1;
-Function<Integer, Integer> mult = i -> i * 2;
-
-// Output: (1 + 1) * 2 = 4 (add runs first, then mult)
-System.out.println(add.andThen(mult).apply(1));
-
-// Output: (1 * 2) + 1 = 3 (mult runs first, then add)
-System.out.println(add.compose(mult).apply(1));
-```
-
-### Example 2: String Formatting Pipeline (Chaining multiple times)
-```java
-Function<String, String> strip = String::trim;
-Function<String, String> upper = String::toUpperCase;
-Function<String, String> addQuotes = s -> "\"" + s + "\"";
-
-// Pipeline: strip -> upper -> addQuotes
-Function<String, String> formatString = strip.andThen(upper).andThen(addQuotes);
-
-System.out.println(formatString.apply("   hello java   ")); 
-// Output: "HELLO JAVA"
-```
-
-### Example 3: Parsing and Transforming
-Functions can transform from one type to another across the chain (`Function<T, R>`).
-```java
-Function<String, Integer> parseStr = Integer::parseInt;
-Function<Integer, Boolean> isEven = num -> num % 2 == 0;
-
-Function<String, Boolean> isStringEven = parseStr.andThen(isEven);
-
-System.out.println(isStringEven.apply("42")); // Output: true
-System.out.println(isStringEven.apply("15")); // Output: false
-```
-
----
-
-## 13. The Predicate Interface
-Used for **filtering** or **conditional checking**.
-```java
-Predicate<String> isLong = s -> s.length() > 5;
-System.out.println(isLong.test("Java")); // false
-```
-
----
-
-## 14. Combining Predicates
-Predicates can be combined using boolean logic methods like `and()`, `or()`, and `negate()`.
-```java
-Predicate<String> hasA = s -> s.contains("a");
-Predicate<String> hasB = s -> s.contains("b");
-
-Predicate<String> both = hasA.and(hasB);
-System.out.println(both.test("apple and banana")); // true
-```
-
----
-
-## 15. The UnaryOperator & BinaryOperator
-Specialized versions of `Function` where all types are the same.
-- **UnaryOperator<T>**: Extends `Function<T, T>`.
-- **BinaryOperator<T>**: Extends `BiFunction<T, T, T>`.
-
-```java
-UnaryOperator<Integer> square = x -> x * x;
-BinaryOperator<Integer> add = (x, y) -> x + y;
-```
-
----
-
-## 16. Summary
-| Interface | Input | Output | Purpose |
-| :--- | :---: | :---: | :--- |
-| **Consumer** | 1 | 0 | Do something with input. |
-| **Supplier** | 0 | 1 | Generate object. |
-| **Function** | 1 | 1 | Transform input. |
-| **Predicate**| 1 | Boolean | Filter/Test input. |
-| **UnaryOp**  | 1 | 1 (Same) | Transform same type. |
-| **BinaryOp** | 2 | 1 (Same) | Combine two same types. |
+> [!IMPORTANT]
+> **Key Interview Rules**:
+> 1. Local variables captured by a lambda must be **effectively final**.
+> 2. `andThen` = execute caller first, then argument: `f.andThen(g)` → `g(f(x))`.
+> 3. `compose` = execute argument first, then caller: `f.compose(g)` → `f(g(x))`.
+> 4. Use primitive specialisations (`IntFunction`, `ToIntFunction`, etc.) to avoid boxing overhead.
+> 5. `Predicate.not(method::ref)` is the Java 11+ idiom for negated method reference filters.
+> 6. A lambda is just syntactic sugar for an anonymous class implementing a `@FunctionalInterface`.
