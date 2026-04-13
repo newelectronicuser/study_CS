@@ -1,6 +1,7 @@
 # Java Memory Management — Interview Notes 🧠
 
 ## 1. Overview
+
 Java memory is managed automatically by the **JVM**. Unlike C/C++, developers don't manually call `malloc`/`free` — the **Garbage Collector (GC)** identifies and reclaims unreachable memory.
 
 **Why this matters in interviews**: Memory questions test understanding of JVM internals, performance tuning, `String` pool behaviour, and common leak patterns.
@@ -13,13 +14,13 @@ Java memory is managed automatically by the **JVM**. Unlike C/C++, developers do
 ┌─────────────────────────────────────────────────────────┐
 │                        JVM Process                      │
 │                                                         │
-│  ┌──────────┐  ┌──────────┐  ┌─────────────────────┐   │
-│  │ Thread 1 │  │ Thread 2 │  │      Heap (Shared)  │   │
-│  │  Stack   │  │  Stack   │  │  ┌───────────────┐  │   │
-│  │ (local   │  │ (local   │  │  │ Young Gen     │  │   │
-│  │  vars,   │  │  vars,   │  │  │ Eden | S0 | S1│  │   │
-│  │  frames) │  │  frames) │  │  ├───────────────┤  │   │
-│  └──────────┘  └──────────┘  │  │ Old Gen       │  │   │
+│  ┌──────────┐  ┌──────────┐   ┌─────────────────────┐   │
+│  │ Thread 1 │  │ Thread 2 │   │      Heap (Shared)  │   │
+│  │  Stack   │  │  Stack   │   │  ┌───────────────┐  │   │
+│  │ (local   │  │ (local   │   │  │ Young Gen     │  │   │
+│  │  vars,   │  │  vars,   │   │  │ Eden | S0 | S1│  │   │
+│  │  frames) │  │  frames) │   │  ├───────────────┤  │   │
+│  └──────────┘  └──────────┘   │  │ Old Gen       │  │   │
 │                               │  │ (Tenured)     │  │   │
 │  ┌──────────────────────────┐ │  └───────────────┘  │   │
 │  │  Metaspace (Native Mem)  │ └─────────────────────┘   │
@@ -32,13 +33,13 @@ Java memory is managed automatically by the **JVM**. Unlike C/C++, developers do
 
 ## 3. Stack Memory
 
-| Property | Detail |
-| :--- | :--- |
-| **Stores** | Method frames, local primitives (`int`, `double`), object **references** (not objects) |
-| **Scope** | **Thread-private** — each thread has its own stack |
-| **Lifecycle** | LIFO — frame pushed on call, popped on return |
-| **Size** | Fixed per thread (configurable via `-Xss`) |
-| **Error** | `StackOverflowError` — infinite recursion |
+| Property      | Detail                                                                                 |
+| :------------ | :------------------------------------------------------------------------------------- |
+| **Stores**    | Method frames, local primitives (`int`, `double`), object **references** (not objects) |
+| **Scope**     | **Thread-private** — each thread has its own stack                                     |
+| **Lifecycle** | LIFO — frame pushed on call, popped on return                                          |
+| **Size**      | Fixed per thread (configurable via `-Xss`)                                             |
+| **Error**     | `StackOverflowError` — infinite recursion                                              |
 
 ```java
 void method() {
@@ -53,13 +54,13 @@ void method() {
 
 ## 4. Heap Memory
 
-| Property | Detail |
-| :--- | :--- |
-| **Stores** | ALL objects and arrays created with `new` |
-| **Scope** | **Shared** — every thread reads/writes the same heap |
-| **Lifecycle** | Managed by the Garbage Collector |
-| **Size** | Configurable: `-Xms` (initial), `-Xmx` (maximum) |
-| **Error** | `OutOfMemoryError: Java heap space` |
+| Property      | Detail                                               |
+| :------------ | :--------------------------------------------------- |
+| **Stores**    | ALL objects and arrays created with `new`            |
+| **Scope**     | **Shared** — every thread reads/writes the same heap |
+| **Lifecycle** | Managed by the Garbage Collector                     |
+| **Size**      | Configurable: `-Xms` (initial), `-Xmx` (maximum)     |
+| **Error**     | `OutOfMemoryError: Java heap space`                  |
 
 ```java
 // Objects always live on the Heap
@@ -84,18 +85,19 @@ String s   = new String("hi");   // String object → Heap (NOT the pool)
 
 ## 6. Stack vs Heap — Quick Reference
 
-| | Stack | Heap |
-| :--- | :--- | :--- |
-| **Stores** | Primitives, references, frames | Objects, arrays |
-| **Shared?** | No (thread-private) | Yes (all threads) |
-| **GC managed?** | No (auto LIFO) | Yes |
-| **Speed** | Faster | Slower |
-| **Size** | Small (MB) | Large (GB) |
-| **Error** | `StackOverflowError` | `OutOfMemoryError` |
+|                 | Stack                          | Heap               |
+| :-------------- | :----------------------------- | :----------------- |
+| **Stores**      | Primitives, references, frames | Objects, arrays    |
+| **Shared?**     | No (thread-private)            | Yes (all threads)  |
+| **GC managed?** | No (auto LIFO)                 | Yes                |
+| **Speed**       | Faster                         | Slower             |
+| **Size**        | Small (MB)                     | Large (GB)         |
+| **Error**       | `StackOverflowError`           | `OutOfMemoryError` |
 
 ---
 
 ## 7. The Generational Heap
+
 **Generational Hypothesis**: Most objects die young. The heap is split so short-lived objects are collected cheaply and frequently.
 
 ```
@@ -110,6 +112,7 @@ Heap
 ```
 
 ### GC cycle flow
+
 1. Object created → **Eden**.
 2. Eden fills → **Minor GC**: live objects copied to a Survivor space; age counter incremented.
 3. After reaching **tenuring threshold** → object **promoted** to **Old Gen**.
@@ -120,9 +123,11 @@ Heap
 ## 8. Garbage Collection — Key Concepts
 
 ### Reachability & GC Roots
+
 An object is **eligible for GC** when no GC Root can reach it.
 
 **GC Roots are**:
+
 - Local variables in active thread stacks
 - Static variables (class-level)
 - Active Java threads themselves
@@ -135,24 +140,26 @@ u = null;                   // 'u' no longer holds reference → User object unr
 ```
 
 ### Mark and Sweep (basic algorithm)
+
 1. **Mark** — traverse from GC roots; mark all reachable objects.
 2. **Sweep** — delete all unmarked (unreachable) objects.
 3. **Compact** — (optional) slide remaining objects together to eliminate fragmentation.
 
 ### Stop-The-World (STW)
+
 A pause where **all application threads are halted** so the GC can safely move or delete objects without concurrent modifications. The goal of modern GCs is to minimize this pause.
 
 ---
 
 ## 9. Modern Garbage Collectors
 
-| Collector | Default Since | Best For | Pause Goal |
-| :--- | :--- | :--- | :--- |
-| **Serial GC** | — | Single-threaded / small heaps | N/A |
-| **Parallel GC** | Java 8 | Throughput-first (batch jobs) | High throughput |
-| **G1GC** | Java 9 | General purpose | Predictable < 200 ms |
-| **ZGC** | Java 15 (prod) | Ultra-low latency | < 1 ms |
-| **Shenandoah** | Java 12 | Low pause, large heaps | < 10 ms |
+| Collector       | Default Since  | Best For                      | Pause Goal           |
+| :-------------- | :------------- | :---------------------------- | :------------------- |
+| **Serial GC**   | —              | Single-threaded / small heaps | N/A                  |
+| **Parallel GC** | Java 8         | Throughput-first (batch jobs) | High throughput      |
+| **G1GC**        | Java 9         | General purpose               | Predictable < 200 ms |
+| **ZGC**         | Java 15 (prod) | Ultra-low latency             | < 1 ms               |
+| **Shenandoah**  | Java 12        | Low pause, large heaps        | < 10 ms              |
 
 ```bash
 # JVM GC flags
@@ -217,18 +224,19 @@ System.out.println(user2.getName()); // "Alice" — original reference unchanged
 ---
 
 ## 12. Memory Leaks
+
 A **memory leak** happens when objects are no longer used but are still **reachable from a GC Root** — so GC can never collect them.
 
 ### Common Causes
 
-| Cause | Example | Fix |
-| :--- | :--- | :--- |
-| **Static collections** | `static List<Object> cache = new ArrayList<>()` that grows forever | Bounded cache, `WeakHashMap` |
-| **Unclosed resources** | `Connection`, `InputStream` never closed | `try-with-resources` |
-| **Non-static inner classes** | Anonymous listener holds implicit ref to outer class | Use static inner class or weak reference |
-| **ThreadLocal leaks** | `ThreadLocal` values not removed in thread pools | Call `threadLocal.remove()` in finally |
-| **Listeners / callbacks** | Event listeners registered but never deregistered | Deregister in lifecycle method |
-| **Classloader leaks** | App servers reloading classes without unloading old ones | Diagnose with MAT heap dump |
+| Cause                        | Example                                                            | Fix                                      |
+| :--------------------------- | :----------------------------------------------------------------- | :--------------------------------------- |
+| **Static collections**       | `static List<Object> cache = new ArrayList<>()` that grows forever | Bounded cache, `WeakHashMap`             |
+| **Unclosed resources**       | `Connection`, `InputStream` never closed                           | `try-with-resources`                     |
+| **Non-static inner classes** | Anonymous listener holds implicit ref to outer class               | Use static inner class or weak reference |
+| **ThreadLocal leaks**        | `ThreadLocal` values not removed in thread pools                   | Call `threadLocal.remove()` in finally   |
+| **Listeners / callbacks**    | Event listeners registered but never deregistered                  | Deregister in lifecycle method           |
+| **Classloader leaks**        | App servers reloading classes without unloading old ones           | Diagnose with MAT heap dump              |
 
 ```java
 // ThreadLocal leak — common in web servers with thread pools
@@ -245,12 +253,12 @@ try {
 
 ## 13. `WeakReference`, `SoftReference`, `PhantomReference`
 
-| Type | GC Behaviour | Use Case |
-| :--- | :--- | :--- |
-| `StrongReference` | Never collected if reachable | Normal variables |
-| `WeakReference<T>` | Collected at next GC | `WeakHashMap`, caches |
-| `SoftReference<T>` | Collected only when memory is low | Memory-sensitive caches |
-| `PhantomReference<T>` | Never returns object; used with `ReferenceQueue` | Post-GC cleanup hooks |
+| Type                  | GC Behaviour                                     | Use Case                |
+| :-------------------- | :----------------------------------------------- | :---------------------- |
+| `StrongReference`     | Never collected if reachable                     | Normal variables        |
+| `WeakReference<T>`    | Collected at next GC                             | `WeakHashMap`, caches   |
+| `SoftReference<T>`    | Collected only when memory is low                | Memory-sensitive caches |
+| `PhantomReference<T>` | Never returns object; used with `ReferenceQueue` | Post-GC cleanup hooks   |
 
 ```java
 // WeakReference — cache that doesn't prevent GC
@@ -270,6 +278,7 @@ key = null; // key becomes unreachable → entry will be removed by GC
 ## 14. Diagnosing Memory Issues
 
 ### JVM Flags for Monitoring
+
 ```bash
 -XX:+HeapDumpOnOutOfMemoryError      # auto-dump heap on OOM
 -XX:HeapDumpPath=/tmp/heap.hprof     # dump file location
@@ -278,36 +287,38 @@ key = null; // key becomes unreachable → entry will be removed by GC
 ```
 
 ### Tools
-| Tool | Purpose |
-| :--- | :--- |
-| **VisualVM** | Real-time heap/thread monitoring; trigger GC manually |
-| **Eclipse MAT** | Deep heap dump analysis; find leak suspects |
-| **jmap** | Generate heap dump: `jmap -dump:format=b,file=heap.hprof <pid>` |
-| **jstat** | Live GC stats: `jstat -gcutil <pid> 1000` (every 1 s) |
-| **jconsole** | JMX monitoring GUI |
+
+| Tool            | Purpose                                                         |
+| :-------------- | :-------------------------------------------------------------- |
+| **VisualVM**    | Real-time heap/thread monitoring; trigger GC manually           |
+| **Eclipse MAT** | Deep heap dump analysis; find leak suspects                     |
+| **jmap**        | Generate heap dump: `jmap -dump:format=b,file=heap.hprof <pid>` |
+| **jstat**       | Live GC stats: `jstat -gcutil <pid> 1000` (every 1 s)           |
+| **jconsole**    | JMX monitoring GUI                                              |
 
 ---
 
 ## 15. Interview Checklist
 
-| Question | Key Answer |
-| :--- | :--- |
-| Stack vs Heap? | Stack = thread-private, LIFO, primitives + refs; Heap = shared, objects |
-| Where do local variables go? | Primitives on Stack; if object, reference on Stack, object on Heap |
-| What causes `StackOverflowError`? | Infinite/deep recursion exceeds stack depth |
-| What causes `OutOfMemoryError`? | Heap full (leak or too-small heap), or Metaspace full |
-| Is Java pass-by-value? | **Yes, always.** Object reference value is copied, not the object |
-| Can you force GC? | `System.gc()` is only a hint — JVM can ignore it |
-| What is a GC Root? | Always-reachable object: stack var, static field, active thread |
-| What is a memory leak in Java? | Object unreachable by app but still reachable by GC root |
-| String `==` vs `.equals()`? | `==` compares references; `.equals()` compares content |
-| What replaced PermGen? | **Metaspace** (Java 8) — uses native memory, auto-grows |
-| What is Stop-the-World? | JVM pauses all threads during GC to safely move objects |
-| What is `intern()`? | Forces string into the pool; enables `==` comparison |
-| Difference between Minor/Major GC? | Minor GC = Young Gen (fast); Major/Full GC = Old Gen (slow, STW) |
+| Question                           | Key Answer                                                              |
+| :--------------------------------- | :---------------------------------------------------------------------- |
+| Stack vs Heap?                     | Stack = thread-private, LIFO, primitives + refs; Heap = shared, objects |
+| Where do local variables go?       | Primitives on Stack; if object, reference on Stack, object on Heap      |
+| What causes `StackOverflowError`?  | Infinite/deep recursion exceeds stack depth                             |
+| What causes `OutOfMemoryError`?    | Heap full (leak or too-small heap), or Metaspace full                   |
+| Is Java pass-by-value?             | **Yes, always.** Object reference value is copied, not the object       |
+| Can you force GC?                  | `System.gc()` is only a hint — JVM can ignore it                        |
+| What is a GC Root?                 | Always-reachable object: stack var, static field, active thread         |
+| What is a memory leak in Java?     | Object unreachable by app but still reachable by GC root                |
+| String `==` vs `.equals()`?        | `==` compares references; `.equals()` compares content                  |
+| What replaced PermGen?             | **Metaspace** (Java 8) — uses native memory, auto-grows                 |
+| What is Stop-the-World?            | JVM pauses all threads during GC to safely move objects                 |
+| What is `intern()`?                | Forces string into the pool; enables `==` comparison                    |
+| Difference between Minor/Major GC? | Minor GC = Young Gen (fast); Major/Full GC = Old Gen (slow, STW)        |
 
 > [!IMPORTANT]
 > **Top 3 things to always say in memory interviews**:
+>
 > 1. Java is **pass-by-value** — the reference value is copied, not the object.
 > 2. `==` on Strings compares **references**; always use `.equals()` for content.
 > 3. Memory leaks in Java happen when objects are **still referenced** (GC can't clean) but no longer needed by the application — most commonly via static fields and unclosed resources.
