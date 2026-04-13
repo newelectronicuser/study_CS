@@ -279,7 +279,9 @@ public class LambdasDemo {
         System.out.println("length('hello'): " + length.apply("hello")); // 5
 
         // andThen — pipe output of f into g
-        Function<Integer, Integer> doubled = length.andThen(n -> n * 2);
+        // length: String→Integer, andThen(n*2): Integer→Integer
+        // result type: Function<String, Integer>  (input still comes from `length`)
+        Function<String, Integer> doubled = length.andThen(n -> n * 2);
         System.out.println("length then double 'Java': " + doubled.apply("Java")); // 8
 
         // compose — run g first, then f
