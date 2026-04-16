@@ -4,8 +4,8 @@
 
 ```mermaid
 graph LR
-    Iterable["Iterable\n__iter__() → returns iterator"] -->|iter()| Iterator["Iterator\n__iter__() + __next__()"]
-    Iterator -->|next()| Value["next value"]
+    Iterable["Iterable\n__iter__() → returns iterator"] -->|"iter()"| Iterator["Iterator\n__iter__() + __next__()"]
+    Iterator -->|"next()"| Value["next value"]
     Iterator -->|exhausted| Stop["StopIteration"]
 
     style Iterable fill:#4a90d9,color:#fff
