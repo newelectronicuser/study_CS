@@ -98,7 +98,7 @@ Use it when build tools (compilers, test frameworks) should not be in the produc
 
 ## Networking
 
-**Q11. What are the different Docker network drivers? When do you use each?**
+**Q11. What are the different Docker network drivers? Explain when you would use each.**
 
 **A:**
 - `bridge` (default): Isolated private network on the host. Containers on the same bridge can communicate. Best for single-host apps.
@@ -212,7 +212,7 @@ docker run --rm -v myvolume:/data -v $(pwd):/backup alpine \
 
 ---
 
-**Q23. How do you define service dependencies in Compose? What are the limitations of `depends_on`?**
+**Q23. How do you define service dependencies in a Compose file? What are the limitations of `depends_on`?**
 
 **A:** `depends_on` ensures that a service doesn't start until its dependencies are running. However, it only waits for the container to start — **not for the service inside to be ready**. For true readiness, use `healthcheck` combined with `condition: service_healthy` in `depends_on`.
 
@@ -239,7 +239,7 @@ depends_on:
 
 ---
 
-**Q26. What is a Compose override file and how do you use it?**
+**Q26. What is a Compose override file and how do you use it for multiple environments?**
 
 **A:** `docker-compose.override.yml` is automatically merged with `docker-compose.yml` when you run `docker compose up`. Use it to define environment-specific overrides (e.g., development bind mounts, extra ports). For other environments: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up`.
 
@@ -247,13 +247,13 @@ depends_on:
 
 ## Security
 
-**Q27. What is the risk of running containers as root? How do you mitigate it?**
+**Q27. What is the risk of running containers as root? How do you mitigate this?**
 
 **A:** A root container, if compromised, can escalate privileges and access the host. Mitigation: use the `USER` directive in the Dockerfile to switch to a non-root user, and run containers with `--user` flag. Use read-only filesystems (`--read-only`) where possible.
 
 ---
 
-**Q28. What are Docker security best practices in production?**
+**Q28. What are Docker security best practices you follow in production?**
 
 **A:**
 - Never run containers as root
@@ -267,13 +267,13 @@ depends_on:
 
 ---
 
-**Q29. How does Docker image scanning work? Name some tools.**
+**Q29. How does Docker image scanning work? Name some tools used for it.**
 
 **A:** Image scanners analyze image layers for known CVEs (Common Vulnerabilities and Exposures) in OS packages and language dependencies. Tools: **Trivy** (open-source, fast), **Snyk**, **Docker Scout** (built-in to Docker Desktop), **Anchore**, **Grype**.
 
 ---
 
-**Q30. What is the difference between `--privileged` and `--cap-add`?**
+**Q30. What is the difference between `--privileged` and `--cap-add` flags?**
 
 **A:** `--privileged` grants the container nearly all Linux capabilities and access to host devices — essentially root on the host. `--cap-add` surgically adds only specific capabilities (e.g., `NET_ADMIN`). Always prefer `--cap-add` with the minimum capability needed.
 
@@ -301,7 +301,13 @@ depends_on:
 
 ---
 
-**Q33. How do you profile and debug a running Docker container?**
+**Q33. What is the impact of the number of layers on Docker image performance?**
+
+**A:** Having many layers increases metadata overhead, image size, and storage usage because each layer contains a set of differences from the previous layer. While it does not drastically impact container runtime execution performance (since the Union File System merges them into a single view), it slows down image pull, push, build, and deploy speeds. Keeping layers minimal and cleaning up temporary files in the same `RUN` step avoids bloating intermediate layers.
+
+---
+
+**Q34. How do you profile and debug a running Docker container?**
 
 **A:**
 - `docker exec -it <container> sh` — interactive shell inside the container
@@ -309,17 +315,17 @@ depends_on:
 - `docker stats` — live resource usage (CPU, memory, I/O)
 - `docker inspect` — detailed metadata
 - `docker top <container>` — running processes
-- Tools: `nsenter`, `strace`, `tcpdump` for advanced diagnostics
+- Tools: `nsenter` to enter the container namespaces directly from host, `strace`, `tcpdump` for network sniff.
 
 ---
 
-**Q34. What is `docker stats` and what metrics does it expose?**
+**Q35. What is `docker stats` and what metrics does it expose?**
 
 **A:** `docker stats` streams live resource utilization for running containers: CPU usage %, memory usage and limit, network I/O (bytes in/out), block I/O (disk read/write), and number of PIDs.
 
 ---
 
-**Q35. How would you limit CPU and memory usage for a Docker container?**
+**Q36. How would you limit CPU and memory usage for a Docker container?**
 
 **A:**
 ```bash
@@ -338,38 +344,73 @@ deploy:
 
 ## Advanced / Production
 
-**Q36. What is Docker BuildKit and what improvements does it bring?**
+**Q37. What is Docker BuildKit and what improvements does it bring?**
 
 **A:** BuildKit is Docker's next-generation build engine. Improvements: parallel layer building, more efficient caching, build secrets (never stored in layers), SSH forwarding for private repos, better output formatting, and support for custom build frontends.
 
 ---
 
-**Q37. How does Docker handle signal propagation and graceful shutdown?**
-
-**A:** Docker sends `SIGTERM` to PID 1 in the container. If PID 1 doesn't handle it, after `--stop-timeout` (default 10s) it sends `SIGKILL`. Use `exec` form for `CMD`/`ENTRYPOINT` (not shell form) so the process is PID 1 and receives the signal directly. Alternatively, use `tini` as an init process.
-
----
-
-**Q38. What is `docker exec` vs `docker attach`? When would you use each?**
-
-**A:** `docker exec` runs a **new** process inside a running container (e.g., an interactive shell). `docker attach` connects your terminal to the container's **existing** PID 1 stdin/stdout — pressing Ctrl+C kills the main process. Use `exec` for debugging; avoid `attach` in production.
-
----
-
-**Q39. How would you implement a blue-green deployment using Docker?**
+**Q38. How do you implement a blue-green deployment strategy using Docker?**
 
 **A:** Run two versions of the service simultaneously (blue and green). Switch the load balancer/reverse proxy (e.g., nginx, Traefik) to route traffic to the new (green) version. Keep blue running for quick rollback. Once confident, remove blue containers.
 
 ---
 
-**Q40. How would you set up a CI/CD pipeline that builds, tags, and pushes Docker images?**
+**Q39. What is the difference between Docker Swarm and Kubernetes?**
+
+**A:**
+- **Docker Swarm:** Lightweight, easy to set up, built into Docker Engine. Uses simple Compose-like configuration. Best for small-to-medium single-host or basic multi-host environments.
+- **Kubernetes:** Extremely powerful, highly customizable, complex container orchestrator. Supports advanced scheduling, auto-scaling, custom resource extensions, service mesh integrations, and multi-tenant architectures. Best for enterprise-grade, distributed scale.
+
+---
+
+**Q40. How do you handle container logging in production? What log drivers are available?**
+
+**A:** In production, do not let container logs grow indefinitely on the host. Configure Docker to use a log driver that forwards logs to a central system.
+*   *Log Drivers:*
+    *   `json-file` (default, but with limits like `max-size` and `max-file` configured).
+    *   `journald` (integrates with OS system logging).
+    *   `syslog` / `gelf` / `fluentd` (forwards to log aggregators).
+    *   `awslogs` (forwards to CloudWatch).
+    *   `gcplogs` (forwards to GCP Stackdriver/Logging).
+
+---
+
+**Q41. How do you manage rolling updates and zero-downtime deployments with Docker?**
+
+**A:**
+*   **Docker Compose:** Launch a new container, wait for it to be healthy, then update the reverse proxy (Nginx/Traefik) config and stop the old one. Or use `docker compose up --detach` which restarts containers sequentially.
+*   **Docker Swarm:** Use `update_config` with `parallelism` and `delay` to update tasks incrementally while checking task health before proceeding.
+*   **Kubernetes:** Use Deployment resources with a `RollingUpdate` strategy, using `maxSurge` and `maxUnavailable` parameters to automate zero-downtime rollouts.
+
+---
+
+**Q42. What are init containers? How can you simulate the pattern in plain Docker?**
+
+**A:** Init containers run and complete *before* the application containers start, usually to perform setup tasks (like waiting for a database to be ready or running migrations). In plain Docker/Compose, you can simulate this using the `entrypoint` script of the app container to check dependencies first, or by using Compose `depends_on` with a `service_completed_successfully` condition pointing to a setup container.
+
+---
+
+**Q43. How does Docker handle signal propagation and graceful shutdown?**
+
+**A:** Docker sends `SIGTERM` to PID 1 in the container. If PID 1 doesn't handle it, after `--stop-timeout` (default 10s) it sends `SIGKILL`. Use `exec` form for `CMD`/`ENTRYPOINT` (not shell form) so the process is PID 1 and receives the signal directly. Alternatively, use `tini` as an init process.
+
+---
+
+**Q44. What is `docker exec` vs `docker attach`? When would you use each?**
+
+**A:** `docker exec` runs a **new** process inside a running container (e.g., an interactive shell). `docker attach` connects your terminal to the container's **existing** PID 1 stdin/stdout — pressing Ctrl+C kills the main process. Use `exec` for debugging; avoid `attach` in production.
+
+---
+
+**Q45. How would you set up a CI/CD pipeline that builds, tags, and pushes Docker images?**
 
 **A:** Typical pipeline:
-1. Trigger on git push/PR
-2. Run tests
-3. `docker build -t registry/app:$GIT_SHA .`
-4. `docker push registry/app:$GIT_SHA`
-5. Also tag as `latest` or a semantic version
-6. Update Kubernetes deployment or trigger Helm upgrade
+1. Trigger on git push/PR.
+2. Run tests.
+3. Build the image with build-cache: `docker buildx build --cache-from=... --cache-to=... -t registry/app:$GIT_SHA .`.
+4. Tag as `latest` or the semantic version on merge to main.
+5. Push to private registry: `docker push registry/app:$GIT_SHA`.
+6. Trigger a deployment update (e.g., ArgoCD sync or kubectl set image).
 
 ---
